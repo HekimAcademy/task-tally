@@ -12,19 +12,32 @@ const db = getFirestore(app);
  * @param {string} req.body.email       user email
  * @param {string} req.body.password    user password 
  * @param {string} req.body.name        user display name
+ * @returns {Object}                    user info
+ * @returns {string}                    user_info.uid
+ * @returns {string}                    user_info.refreshToken
+ * @returns {string}                    user_info.accessToken
+ * @returns {string}                    user_info.expirationTime
 */ 
 const firebaseSignUp = async (req, res) => {
 
     createUserWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then((userInfo) => {
-        userInfo = {
+        let userRec = {
             uid: userInfo.user.uid,
             email: userInfo.user.email,
             name: req.body.name
         }
+        firebaseSetUserData(userRec)
 
-        firebaseSetUserData(userInfo)
-        res.sendStatus(201)
+        userInfo = {
+            uid: userInfo.user.uid,
+            refreshToken: userInfo.user.refreshToken,
+            accessToken: userInfo._tokenResponse.idToken,
+            expirationTime: userInfo._tokenResponse.expiresIn,
+        }
+        res.send(userInfo)
+
+        //res.sendStatus(201)
     })
 
     .catch((error) => {
@@ -37,11 +50,22 @@ const firebaseSignUp = async (req, res) => {
  * @param {Object} req                  request body
  * @param {string} req.body.email       user email
  * @param {string} req.body.password    user password
+ * @returns {Object}                    user info
+ * @returns {string}                    user_info.uid
+ * @returns {string}                    user_info.refreshToken
+ * @returns {string}                    user_info.accessToken
+ * @returns {string}                    user_info.expirationTime
  */
 const firebaseSignIn = async (req, res) => {
     signInWithEmailAndPassword(auth, req.body.email, req.body.password)
     .then((userInfo) => {
-        res.end(JSON.stringify(userInfo))
+        userInfo = {
+            uid: userInfo.user.uid,
+            refreshToken: userInfo.user.refreshToken,
+            accessToken: userInfo._tokenResponse.idToken,
+            expirationTime: userInfo._tokenResponse.expiresIn,
+        }
+        res.send(userInfo)
     })
 
     .catch((error) => {
