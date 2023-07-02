@@ -10,7 +10,7 @@ const { app } = require('../firebase/firebaseConnection')
 const db = getFirestore(app);
 
 
-/* ----- API FUNCTIONS ----- */
+// ---- API FUNCTIONS ---- //
 /**
  * @param {Object} req                           request body
  * @param {string} req.body.project_name         project name
@@ -78,7 +78,7 @@ const joinProject = async (req, res) => {
 
 
 
-// ---- HELPER FUNCTIONS ----- //
+// ---- HELPER FUNCTIONS ---- //
 const userExists = async (userId) => {
 
     const userRef = doc(db, "users", userId);
@@ -114,12 +114,7 @@ const userIsInProject = async (projectId, userId) => {
     );
 
     const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.size > 0) {
-        return true
-    } else {
-        return false
-    }
+    return querySnapshot.size > 0;
 
 }
 

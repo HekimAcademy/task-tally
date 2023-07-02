@@ -6,7 +6,7 @@ const auth = getAuth();
 const db = getFirestore(app);
 
 
-/* ----- API FUNCTIONS ----- */
+// ---- API FUNCTIONS ---- //
 /**
  * @param {Object} req                  request body
  * @param {string} req.body.email       user email
@@ -50,7 +50,7 @@ const firebaseSignIn = async (req, res) => {
 }
 
 
-/* ----- HELPER FUNCTIONS ----- */
+// ---- HELPER FUNCTIONS ---- //
 /**
  * @param {Object} userInfo             user info
  * @param {string} userInfo.body.uid    user id
