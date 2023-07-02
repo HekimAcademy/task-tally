@@ -47,6 +47,16 @@ const useCronometer = async (req, res) => {
     res.send({ work_log_id: docRef.id })
 }
 
+const getUserWorkLogs = async (req, res) => {
+    const q = query(
+        collection(db, "work_logs"),
+        where("user_id", "==", req.params.userId),
+    );
+
+    const querySnapshot = await getDocs(q);
+    res.send(querySnapshot.docs.map(doc => doc.data()))
+}
+
 
 // ---- HELPER FUNCTIONS ---- //
 /**
@@ -79,10 +89,8 @@ const userHasCronometer = async (userId) => {
     );
     const querySnapshot = await getDocs(q);
 
-    console.log("querySnapshot")
-    console.log(querySnapshot)
     return [querySnapshot.size > 0, querySnapshot.docs[0]];
 }
 
 
-module.exports = { useCronometer }
+module.exports = { useCronometer, getUserWorkLogs }
