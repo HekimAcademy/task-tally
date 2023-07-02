@@ -52,6 +52,38 @@ const getProject = async (req, res) => {
 }
 
 /**
+ * @param {Object} req                           request body
+ * @param {string} req.params.userId             user id to get projects from
+ * @returns {Object[]}                           array of projects
+ * @returns {string}                             project.project_id
+ * @returns {string}                             project.project_name
+ * @returns {string}                             project.description
+ * @returns {string}                             project.project_manager_id
+*/
+const getUserProjects = async (req, res) => {
+    const q = query(
+        collection(db, "user_projects"),
+        where("user_id", "==", req.params.userId),
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const userProjects = []
+    for (const document of querySnapshot.docs) {
+
+        const docRef = doc(db, "projects", document.data().project_id);
+        const docSnap = await getDoc(docRef);
+
+        project = docSnap.data()
+        project.project_id = docSnap.id;
+
+        userProjects.push(project)
+    }
+
+    res.send(userProjects)
+}
+
+/**
  * 
  * @param {Object} req                   request body
  * @param {string} req.body.project_id   project id to join
@@ -118,4 +150,4 @@ const userIsInProject = async (projectId, userId) => {
 
 }
 
-module.exports = { createProject, getProject, joinProject }
+module.exports = { createProject, getProject, getUserProjects, joinProject }
