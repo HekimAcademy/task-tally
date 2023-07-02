@@ -43,7 +43,6 @@ const firebaseSignUp = async (req, res) => {
     .catch((error) => {
         res.end(JSON.stringify(error))
     })
-    //res.end("idk")
 }
 
 /**
