@@ -1,5 +1,15 @@
 
 # TASK-TALLY
+
+## TO-DO
+* Add department logic.
+* Only department managers can create projects.
+* Adjust routes.
+* Create signing in with refresh token.
+
+___
+
+
 ## AUTH 
 | name    | method | route        | params                        | params place |      |
 | :------ | :----: | :----------- | :---------------------------- | :----------: | :--- |
