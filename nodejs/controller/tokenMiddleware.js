@@ -23,7 +23,6 @@ const validateFirebaseIdToken = (req, res, next) => {
 
     // If access token is valid
     admin.auth().verifyIdToken(idToken).then((decodedIdToken) => {
-        console.log('ID token was valid');
         req.userId = decodedIdToken.uid;
         next();
     }).catch(error => {

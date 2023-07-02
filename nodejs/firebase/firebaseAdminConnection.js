@@ -10,18 +10,18 @@ admin.initializeApp({
 console.log("Firebase Admin connection established!")
 
 // ONLY FOR TEST PURPOSES !!!
-try {
-    admin.auth().getUserByEmail('keremeksioglu42@gmail.com')
-        .then((userRecord) => {
-            // See the UserRecord reference doc for the contents of userRecord.
-            console.log('Successfully fetched user data:', userRecord.toJSON());
-        })
-        .catch((error) => {
-            console.log('Error fetching user data:', error);
-        });
-} catch (error) {
-    console.error('Admin SDK not initialized', error);
-}
+// try {
+//     admin.auth().getUserByEmail('keremeksioglu42@gmail.com')
+//         .then((userRecord) => {
+//             // See the UserRecord reference doc for the contents of userRecord.
+//             console.log('Successfully fetched user data:', userRecord.toJSON());
+//         })
+//         .catch((error) => {
+//             console.log('Error fetching user data:', error);
+//         });
+// } catch (error) {
+//     console.error('Admin SDK not initialized', error);
+// }
 
 //console.log("Firebase Admin connection established!")
 
