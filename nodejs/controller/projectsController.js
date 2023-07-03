@@ -50,6 +50,31 @@ const createProject = async (req, res) => {
 
 /**
  * 
+ * @param {Object} req                   request body
+ * @param {string} req.body.project_id   project id to join
+ * @param {string} req.userId            user id to join project. Received from middleware through access token
+ */
+const joinProject = async (req, res) => {
+    const project = {
+        project_id: req.body.project_id,
+        user_id: req.userId
+    }
+
+    if (!(await projectExists(project.project_id))) {
+        res.send("project does not exist");
+        return;
+    }
+    if (await userIsInProject(project.project_id, project.user_id)) {
+        res.send("user is already in this project");
+        return;
+    }
+
+    const docRef = await addDoc(collection(db, "user_projects"), project);
+    res.send('Success!')
+}
+
+/**
+ * 
  * @param {Object} req                           request body
  * @param {string} req.params.projectId          project id to get
  * 
@@ -73,8 +98,15 @@ const getProject = async (req, res) => {
  * @returns {string}                             project.project_name
  * @returns {string}                             project.description
  * @returns {string}                             project.project_manager_id
+ * @returns {string}                             project.department_id
 */
 const getUserProjects = async (req, res) => {
+
+    if (!(await userExists(req.params.userId))) {
+        res.send("user does not exist")
+        return;
+    }
+
     const q = query(
         collection(db, "user_projects"),
         where("user_id", "==", req.params.userId),
@@ -99,28 +131,79 @@ const getUserProjects = async (req, res) => {
 
 /**
  * 
- * @param {Object} req                   request body
- * @param {string} req.body.project_id   project id to join
- * @param {string} req.userId            user id to join project. Received from middleware through access token
+ * @param {Object} req                          request body
+ * @param {string} req.params.departmentId      department id to get projects from 
+ * @returns {Object[]}                           array of projects
+ * @returns {string}                             project.project_id
+ * @returns {string}                             project.project_name
+ * @returns {string}                             project.description
+ * @returns {string}                             project.project_manager_id
+ * @returns {string}                             project.department_id
+ * @returns 
  */
-const joinProject = async (req, res) => {
-    const project = {
-        project_id: req.body.project_id,
-        user_id: req.userId
-    }
+const getDepartmentProjects = async (req, res) => {
 
-    if (!(await projectExists(project.project_id))) {
-        res.send("project does not exist");
-        return;
-    }
-    if (await userIsInProject(project.project_id, project.user_id)) {
-        res.send("user is already in this project");
+    if (!(await departmentExists(req.params.departmentId))) {
+        res.send("department does not exist")
         return;
     }
 
-    const docRef = await addDoc(collection(db, "user_projects"), project);
-    res.send('Success!')
+    const q = query(
+        collection(db, "projects"),
+        where("department_id", "==", req.params.departmentId),
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const departmentProjects = []
+    for (const document of querySnapshot.docs) {
+
+        const docRef = doc(db, "projects", document.id);
+        const docSnap = await getDoc(docRef);
+
+        project = docSnap.data()
+        project.project_id = docSnap.id;
+
+        departmentProjects.push(project)
+    }
+
+    res.send(departmentProjects)
 }
+
+
+/**
+ * @returns {Object[]}                           array of projects
+ * @returns {string}                             project.project_id
+ * @returns {string}                             project.project_name
+ * @returns {string}                             project.description
+ * @returns {string}                             project.project_manager_id
+ * @returns {string}                             project.department_id
+ */
+const getAllProjects = async (req, res) => {
+
+    const q = query(
+        collection(db, "projects"),
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    const allProjects = []
+    for (const document of querySnapshot.docs) {
+
+        const docRef = doc(db, "projects", document.id);
+        const docSnap = await getDoc(docRef);
+
+        project = docSnap.data()
+        project.project_id = docSnap.id;
+
+        allProjects.push(project)
+    }
+
+    res.send(allProjects)
+
+}
+
+
 
 
 
@@ -180,4 +263,4 @@ const departmentExists = async (departmentId) => {
     return departmentSnap.exists();
 }
 
-module.exports = { createProject, getProject, getUserProjects, joinProject }
+module.exports = { createProject, joinProject, getProject, getUserProjects, getDepartmentProjects, getAllProjects }
