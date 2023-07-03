@@ -6,6 +6,12 @@
 * Only department managers can create projects.
 * Adjust routes.
 * Create signing in with refresh token.
+* Arrange res.statuses.
+* Create leaving project logic.
+* User profiles.
+* Get all users.
+* Allow users to add work log later.
+* Allow users to edit their work log.
 
 ___
 
