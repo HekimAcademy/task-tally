@@ -57,6 +57,21 @@ const getUser = async (req, res) => {
     res.send(user)
 }
 
+/**
+ * 
+ * @param {Object} req                         request body
+ * @param {string} req.params.userId           user id to get work logs from  
+ */
+const getUserWorkLogs = async (req, res) => {
+    const q = query(
+        collection(db, "work_logs"),
+        where("user_id", "==", req.params.userId),
+    );
+
+    const querySnapshot = await getDocs(q);
+    res.send(querySnapshot.docs.map(doc => doc.data()))
+}
+
 
 
 // ---- HELPER FUNCTIONS ---- //
@@ -96,4 +111,4 @@ const getUserByEmail = async (email) => {
     return (data)
 }
 
-module.exports = { getAllUsers, getUser }
+module.exports = { getAllUsers, getUser, getUserWorkLogs }
