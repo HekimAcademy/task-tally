@@ -23,15 +23,29 @@ const createProject = async (req, res) => {
     const project = {
         project_name: req.body.project_name,
         description: req.body.description,
-        project_manager_id: req.body.project_manager_id
+        project_manager_id: req.body.project_manager_id,
+        department_id: req.body.department_id
     }
 
-    if (userExists(project.project_manager_id)) {
-        const docRef = await addDoc(collection(db, "projects"), project);
-        res.send({ project_id: docRef.id })
-    } else {
+    if (!(await userExists(project.project_manager_id))) {
         res.send("manager does not exist")
+        return;
     }
+
+    if (!await departmentExists(project.department_id)) {
+        res.send("department does not exist")
+        return;
+    }
+
+    if (!(await userIsDepartmentManager(req.userId, project.department_id))) {
+        res.send("user is not the department manager")
+        return;
+    }
+
+
+
+    const docRef = await addDoc(collection(db, "projects"), project);
+    res.send({ project_id: docRef.id })
 }
 
 /**
@@ -116,11 +130,7 @@ const userExists = async (userId) => {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
 
-    if (userSnap.exists()) {
-        return true
-    } else {
-        return false
-    }
+    return userSnap.exists()
 
 }
 
@@ -148,6 +158,26 @@ const userIsInProject = async (projectId, userId) => {
     const querySnapshot = await getDocs(q);
     return querySnapshot.size > 0;
 
+}
+
+const userIsDepartmentManager = async (userId, departmentId) => {
+
+    const q = query(
+        collection(db, "department_managers"),
+        where("department_id", "==", departmentId),
+        where("user_id", "==", userId)
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.size > 0;
+}
+
+const departmentExists = async (departmentId) => {
+
+    const departmentRef = doc(db, "departments", departmentId);
+    const departmentSnap = await getDoc(departmentRef);
+
+    return departmentSnap.exists();
 }
 
 module.exports = { createProject, getProject, getUserProjects, joinProject }
