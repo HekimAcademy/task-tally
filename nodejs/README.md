@@ -11,10 +11,10 @@ ___
 
 
 ## AUTH 
-| name    | method | route        | params                        | params place |      |
-| :------ | :----: | :----------- | :---------------------------- | :----------: | :--- |
-| Sign Up |  POST  | /auth/signUp | email <br> password <br> name |     Body     |      |
-| Sign In |  POST  | /auth/signIn | email <br> password           |     Body     |      |
+| name    | method | route        | params                        | Parameter Placement |      |
+| :------ | :----: | :----------- | :---------------------------- | :-----------------: | :--- |
+| Sign Up |  POST  | /auth/signUp | email <br> password <br> name |        Body         |      |
+| Sign In |  POST  | /auth/signIn | email <br> password           |        Body         |      |
 
 ## PROJECTS
 | name                   | method | route                  | params                                                | params place |      |
