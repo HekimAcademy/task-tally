@@ -5,12 +5,12 @@
 * Kullanıcı
 * - Projeye katılabilir (proje_id'si ile)
 * - Kronometre başlatabilir
+* - Geçmiş kayıt ekleyebilir
 * - Aynı anda yalnızca 1 kronometre
 * 
 * Departman Yöneticisi
 * - Proje oluşturabilir
 * - Departman raporu görüntüleyebilir
-* 
 * 
 * Admin
 * - Departman oluşturabilir
@@ -36,6 +36,7 @@
 * ANA SAYFA (KRONOMETREYI BAŞLAT)
 * GEÇMİŞ ÇALIŞMALARI GÖRÜNTÜLE
 * GEÇMİŞ ÇALIŞMAYI DÜZENLE
+* GEÇMİŞ ÇALIŞMA EKLE
 * 
 * TÜM DEPARTMANLARI GÖRÜNTÜLE (ADMIN)
 * GENEL RAPOR (ADMIN)
