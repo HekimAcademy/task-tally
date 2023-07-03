@@ -5,7 +5,6 @@
 * Arrange res.statuses.
 * Create leaving project logic.
 * User profiles.
-* Get all users.
 * Allow users to add work log later.
 * Allow users to edit their work log.
 * getDepartment, getManager and getMembers should work together. Right now getDepartment uses different functions for receiving manager and members.
