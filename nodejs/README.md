@@ -2,9 +2,6 @@
 # TASK-TALLY
 
 ## TO-DO
-* Only department managers can create projects.
-* Adjust routes.
-* Create signing in with refresh token.
 * Arrange res.statuses.
 * Create leaving project logic.
 * User profiles.
