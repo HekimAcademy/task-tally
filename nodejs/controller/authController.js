@@ -75,6 +75,10 @@ const firebaseSignIn = async (req, res) => {
         })
 }
 
+/**
+ * @param {Object} req                      request body
+ * @param {string} req.body.refreshToken    user refresh token
+ */
 const firebaseSignInWithToken = async (req, res) => {
 
     try {
