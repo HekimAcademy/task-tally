@@ -5,6 +5,7 @@ const { firebaseSignUp, firebaseSignIn, firebaseSignInWithToken } = require('../
 const { createProject, getProject, getUserProjects, joinProject } = require('../controller/projectsController')
 const { useCronometer, getUserWorkLogs } = require('../controller/appController')
 const { createDepartment, joinDepartment, leaveDepartment, makeDepartmentManager, getDepartmentMembers, getDepartmentManager, getDepartment, getDepartments } = require('../controller/departmentController')
+const { getAllUsers, getUser } = require('../controller/userController')
 
 const { validateFirebaseIdToken } = require('../controller/tokenMiddleware')
 
@@ -20,6 +21,9 @@ Router.get('/projects/user/:userId', validateFirebaseIdToken, getUserProjects)
 
 Router.post('/app/cronometer', validateFirebaseIdToken, useCronometer)
 Router.get('/app/:userId', validateFirebaseIdToken, getUserWorkLogs)
+
+Router.get('/users', validateFirebaseIdToken, getAllUsers)
+Router.get('/user', validateFirebaseIdToken, getUser)
 
 Router.post('/departments', validateFirebaseIdToken, createDepartment)
 Router.post('/departments/join', validateFirebaseIdToken, joinDepartment)
