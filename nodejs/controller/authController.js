@@ -100,7 +100,6 @@ const firebaseSignInWithToken = async (req, res) => {
     }
 }
 
-
 // ---- HELPER FUNCTIONS ---- //
 /**
  * @param {Object} userInfo             user info
@@ -111,7 +110,7 @@ const firebaseSignInWithToken = async (req, res) => {
 const firebaseSetUserData = async (userInfo) => {
 
     await setDoc(doc(db, "users", userInfo.uid), {
-        user_mail: userInfo.email,
+        user_email: userInfo.email,
         user_name: userInfo.name
     })
 
