@@ -1,13 +1,13 @@
 
 # TASK-TALLY
 
+[POSTMAN LINK](https://www.postman.com/supply-operator-41990931/workspace/hekimacademy/collection/25530300-84c4cfdc-ccde-497c-8b4c-ae59ff99328f)
 
 ## RUN
 npm run dev
 
 ## TO-DO
 * Arrange res.statuses.
-* Get project users
 * Create leaving project logic.
 * User profiles.
 * User and worklog routes look bad.

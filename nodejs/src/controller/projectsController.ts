@@ -117,7 +117,13 @@ async function getProject(req: Request, res: Response) {
 	const docSnap = await getDoc(docRef);
 
 	if (docSnap.exists()) {
-		res.send(docSnap.data());
+		let project = docSnap.data();
+
+		await getProjectUsers(projectId).then((users) => {
+			project.users = users;
+		});
+
+		res.status(200).send(project);
 	} else {
 		res.status(500);
 	}
@@ -178,15 +184,14 @@ async function getUserProjects(req: Request, res: Response) {
  * @returns
  */
 async function getDepartmentProjects(req: Request, res: Response) {
+	const { departmentId } = req.params;
 
-    const { departmentId } = req.params;
-
-    if (!departmentId) {
-        res.status(400).send("Missing parameters in params");
-    }
+	if (!departmentId) {
+		res.status(400).send("Missing parameters in params");
+	}
 
 	if (!(await departmentExists(departmentId))) {
-		return res.status(404).send("Department does not exist");;
+		return res.status(404).send("Department does not exist");
 	}
 
 	const q = query(
@@ -240,14 +245,14 @@ async function getAllProjects(req: Request, res: Response) {
 /* -------------------------- */
 /* ---- HELPER FUNCTIONS ---- */
 /* -------------------------- */
-const userExists = async (userId: string) => {
+async function userExists(userId: string) {
 	const userRef = doc(db, "users", userId);
 	const userSnap = await getDoc(userRef);
 
 	return userSnap.exists();
-};
+}
 
-const projectExists = async (projectId: string) => {
+async function projectExists(projectId: string) {
 	const projectRef = doc(db, "projects", projectId);
 	const projectSnap = await getDoc(projectRef);
 
@@ -256,9 +261,9 @@ const projectExists = async (projectId: string) => {
 	} else {
 		return false;
 	}
-};
+}
 
-const userIsInProject = async (projectId: string, userId: string) => {
+async function userIsInProject(projectId: string, userId: string) {
 	const q = query(
 		collection(db, "user_projects"),
 		where("project_id", "==", projectId),
@@ -267,12 +272,9 @@ const userIsInProject = async (projectId: string, userId: string) => {
 
 	const querySnapshot = await getDocs(q);
 	return querySnapshot.size > 0;
-};
+}
 
-const userIsDepartmentManager = async (
-	userId: string,
-	departmentId: string
-) => {
+async function userIsDepartmentManager(userId: string, departmentId: string) {
 	const q = query(
 		collection(db, "department_managers"),
 		where("department_id", "==", departmentId),
@@ -281,14 +283,36 @@ const userIsDepartmentManager = async (
 
 	const querySnapshot = await getDocs(q);
 	return querySnapshot.size > 0;
-};
+}
 
-const departmentExists = async (departmentId: string) => {
+async function departmentExists(departmentId: string) {
 	const departmentRef = doc(db, "departments", departmentId);
 	const departmentSnap = await getDoc(departmentRef);
 
 	return departmentSnap.exists();
-};
+}
+
+async function getProjectUsers(projectId: string) {
+	const q = query(
+		collection(db, "user_projects"),
+		where("project_id", "==", projectId)
+	);
+
+	const querySnapshot = await getDocs(q);
+
+	const projectUsers = [];
+	for (const document of querySnapshot.docs) {
+		const docRef = doc(db, "users", document.data().user_id);
+		const docSnap = await getDoc(docRef);
+
+		let user = docSnap.data();
+		user!.user_id = docSnap.id;
+
+		projectUsers.push(user);
+	}
+
+	return projectUsers;
+}
 
 module.exports = {
 	createProject,
