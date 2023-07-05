@@ -6,10 +6,9 @@
 * Create leaving project logic.
 * User profiles.
 * User and worklog routes look bad.
-* Allow users to add work log later.
-* Allow users to edit their work log.
 * getDepartment, getManager and getMembers should work together. Right now getDepartment uses different functions for receiving manager and members.
 
+* Should it check if cronometer is running before letting user update worklog 
 ___
 
 

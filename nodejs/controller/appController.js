@@ -16,7 +16,7 @@ const useCronometer = async (req, res) => {
     const workLog = {
         user_id: req.userId,
         project_id: req.body.project_id,
-        start_time: (Date().getTime()) / 1000,
+        start_time: (new Date().getTime()) / 1000,
         end_time: null
     }
 
@@ -31,7 +31,7 @@ const useCronometer = async (req, res) => {
 
             const docRef = doc(db, "work_logs", cronometerProject.id);
             await updateDoc(docRef, {
-                end_time: (Date().getTime()) / 1000
+                end_time: (new Date().getTime()) / 1000
             });
 
             res.send("cronometer stopped")
@@ -99,6 +99,54 @@ const addWorkLog = async (req, res) => {
     res.send({ work_log_id: docRef.id })
 }
 
+const updateWorkLog = async (req, res) => {
+    const { userId, body: { start_time, end_time }, params: { workLogId } } = req;
+
+    if (start_time === undefined || end_time === undefined) {
+        return res.send("start_time or end_time is undefined")
+    }
+
+    if (typeof start_time !== "number" || typeof end_time !== "number") {
+        return res.send("start_time or end_time is not a number")
+    }
+
+    if (!isTimestamp(start_time) || !isTimestamp(end_time)) {
+        return res.send("start_time or end_time is not a timestamp")
+    }
+
+    if (start_time > end_time) {
+        return res.send("start_time is greater than end_time")
+    }
+
+    if (start_time === end_time) {
+        return res.send("start_time is equal to end_time")
+    }
+
+    if (!(await userExists(userId))) {
+        return res.send("user does not exist")
+    }
+
+    const workLogRef = doc(db, "work_logs", workLogId);
+    const workLogSnap = await getDoc(workLogRef);
+
+    if (!workLogSnap.exists()) {
+        return res.send("work log does not exist")
+    }
+
+    const workLog = workLogSnap.data();
+
+    if (workLog.user_id !== userId) {
+        return res.send("user does not own this work log")
+    }
+
+    const docRef = await updateDoc(workLogRef, {
+        start_time: start_time / 1000,
+        end_time: end_time / 1000
+    });
+
+    res.send("work log updated")
+}
+
 
 
 // ---- HELPER FUNCTIONS ---- //
@@ -154,4 +202,4 @@ const isTimestamp = (value) => {
 }
 
 
-module.exports = { useCronometer, addWorkLog }
+module.exports = { useCronometer, addWorkLog, updateWorkLog }
