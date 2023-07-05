@@ -8,6 +8,7 @@
 import {
 	getFirestore,
 	setDoc,
+	deleteDoc,
 	doc,
 	addDoc,
 	collection,
@@ -98,6 +99,57 @@ async function joinProject(req: Request, res: Response) {
 		project_id: project_id,
 	});
 	res.status(201).send("Success!");
+}
+
+async function leaveProject(req: Request, res: Response) {
+
+	const {
+		userId,
+		body: { project_id, user_id },
+	} = req;
+
+	if (!userId && !project_id) {
+		return res.status(400).send("Missing parameters in request body");
+	}
+
+	let userToBeRemoved = userId
+
+	if (user_id) {
+		if (!(await userExists(user_id))) {
+			return res.status(404).send("user does not exist");
+		}
+
+		if (!(await userIsInProject(project_id, user_id))) {
+			return res.status(409).send("user is not in this project");
+		}
+
+		userToBeRemoved = user_id
+	}
+
+
+
+	if (!(await projectExists(project_id))) {
+		return res.status(404).send("project does not exist");
+	}
+
+	if (!(await userIsInProject(project_id, userToBeRemoved!))) {
+		return res.status(409).send("user is not in this project");
+	}
+
+	const q = query(
+		collection(db, "user_projects"),
+		where("user_id", "==", userToBeRemoved),
+		where("project_id", "==", project_id)
+	);
+
+	const querySnapshot = await getDocs(q);
+
+	for (const document of querySnapshot.docs) {
+		await deleteDoc(doc(db, "user_projects", document.id));
+	}
+
+	res.status(200).send("Success!");
+
 }
 
 /**
@@ -321,4 +373,5 @@ module.exports = {
 	getUserProjects,
 	getDepartmentProjects,
 	getAllProjects,
+	leaveProject
 };
