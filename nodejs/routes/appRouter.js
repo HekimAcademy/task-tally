@@ -28,7 +28,7 @@ Router.put('/app/:workLogId', validateFirebaseIdToken, updateWorkLog)
 
 Router.get('/users', validateFirebaseIdToken, getAllUsers)
 Router.get('/user', validateFirebaseIdToken, getUser)
-Router.get('/user/:userId/workLogs', validateFirebaseIdToken, getUserWorkLogs)
+Router.get('/users/:userId/workLogs', validateFirebaseIdToken, getUserWorkLogs)
 
 Router.post('/departments', validateFirebaseIdToken, createDepartment)
 Router.post('/departments/join', validateFirebaseIdToken, joinDepartment)
