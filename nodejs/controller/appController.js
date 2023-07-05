@@ -47,47 +47,56 @@ const useCronometer = async (req, res) => {
     res.send({ work_log_id: docRef.id })
 }
 
+
+/**
+ * @param {Object} req                  request body
+ * @param {string} req.body.project_id  project id to start cronometer on
+ * @param {string} req.userId           user id to start cronometer on project. Received from middleware through access token
+ * @param {Object} req.body.start_time  start time of work log (timestamp in milliseconds)
+ * @param {Object} req.body.end_time    end time of work log (timestamp in milliseconds)
+ * @returns {string} work_log_id        doc id of the started cronometer
+ */
 const addWorkLog = async (req, res) => {
-    
-        const workLog = {
-            user_id: req.userId,
-            project_id: req.body.project_id,
-            start_time: req.body.start_time,
-            end_time: req.body.end_time
-        }
 
-        if (workLog.start_time === undefined || workLog.end_time === undefined) {
-            res.send("start_time or end_time is undefined")
-            return
-        }
+    const { userId, body: { project_id, start_time, end_time } } = req;
 
-        if (typeof workLog.start_time !== "number" || typeof workLog.end_time !== "number") {
-            res.send("start_time or end_time is not a number")
-            return
-        }
+    if (start_time === undefined || end_time === undefined) {
+        return res.send("start_time or end_time is undefined")
+    }
 
-        if (!isTimestamp(workLog.start_time) || !isTimestamp(workLog.end_time)) {
-            res.send("start_time or end_time is not a timestamp")
-            return
-        }
+    if (typeof start_time !== "number" || typeof end_time !== "number") {
+        return res.send("start_time or end_time is not a number")
+    }
 
-        if (workLog.start_time > workLog.end_time) {
-            res.send("start_time is greater than end_time")
-            return
-        }
+    if (!isTimestamp(start_time) || !isTimestamp(end_time)) {
+        return res.send("start_time or end_time is not a timestamp")
+    }
 
-        if (workLog.start_time === workLog.end_time) {
-            res.send("start_time is equal to end_time")
-            return
-        }
-    
-        if (!(await userIsInProject(workLog.user_id, workLog.project_id))) {
-            res.send("user is not in this project or project does not exist at all")
-            return
-        }
-    
-        const docRef = await addDoc(collection(db, "work_logs"), workLog);
-        res.send({ work_log_id: docRef.id })
+    if (start_time > end_time) {
+        return res.send("start_time is greater than end_time")
+    }
+
+    if (start_time === end_time) {
+        return res.send("start_time is equal to end_time")
+    }
+
+    if (!(await userExists(userId))) {
+        return res.send("user does not exist")
+    }
+
+    if (!(await userIsInProject(userId, project_id))) {
+        return res.send("user is not in this project or project does not exist at all")
+    }
+
+    const workLog = {
+        user_id: userId,
+        project_id: project_id,
+        start_time: start_time / 1000,
+        end_time: end_time / 1000
+    }
+
+    const docRef = await addDoc(collection(db, "work_logs"), workLog);
+    res.send({ work_log_id: docRef.id })
 }
 
 
@@ -126,18 +135,23 @@ const userHasCronometer = async (userId) => {
     return [querySnapshot.size > 0, querySnapshot.docs[0]];
 }
 
+const userExists = async (user_id) => {
+    const docRef = doc(db, "users", user_id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists();
+}
 
 // Function for checking if the given value is a timestamp (for example: 1688498722084)
 const isTimestamp = (value) => {
     return (
-        value.toString().length === 13 
-        && !isNaN(value)  
-        && value > 0 
-        && value < 32503680000000 
-        && value % 1 === 0 
+        value.toString().length === 13
+        && !isNaN(value)
+        && value > 0
+        && value < 32503680000000
+        && value % 1 === 0
         && value > 1609459200000
-        )
+    )
 }
 
 
-module.exports = { useCronometer }
+module.exports = { useCronometer, addWorkLog }

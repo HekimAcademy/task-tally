@@ -3,7 +3,7 @@ const Router = require('express').Router()
 
 const { firebaseSignUp, firebaseSignIn, firebaseSignInWithToken } = require('../controller/authController')
 const { createProject, getProject, getUserProjects, joinProject, getDepartmentProjects, getAllProjects } = require('../controller/projectsController')
-const { useCronometer } = require('../controller/appController')
+const { useCronometer, addWorkLog } = require('../controller/appController')
 const { createDepartment, joinDepartment, leaveDepartment, makeDepartmentManager, getDepartmentMembers, getDepartmentManager, getDepartment, getDepartments } = require('../controller/departmentController')
 const { getAllUsers, getUser, getUserWorkLogs } = require('../controller/userController')
 
@@ -22,6 +22,8 @@ Router.get('/projects/user/:userId', validateFirebaseIdToken, getUserProjects)
 Router.get('/projects/department/:departmentId', validateFirebaseIdToken, getDepartmentProjects)
 
 Router.post('/app/cronometer', validateFirebaseIdToken, useCronometer)
+Router.post('/app/addWorkLog', validateFirebaseIdToken, addWorkLog)
+
 
 Router.get('/users', validateFirebaseIdToken, getAllUsers)
 Router.get('/user', validateFirebaseIdToken, getUser)
