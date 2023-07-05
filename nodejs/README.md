@@ -2,23 +2,24 @@
 # TASK-TALLY
 
 
-## Res.Statuses
+## RUN
+npm run dev
 
 ## TO-DO
 * Arrange res.statuses.
+* Get project users
 * Create leaving project logic.
 * User profiles.
 * User and worklog routes look bad.
 * getDepartment, getManager and getMembers should work together. Right now getDepartment uses different functions for receiving manager and members.
+* Department can be created only by admin
+* Create department should return department id
 
 * Should it check if cronometer is running before letting user update worklog 
 ___
 
 
-## NOT UP-TO-DATE
-
-:heavy_check_mark:
-:x:
+# COMMENTS BELOW ARE NOT UP-TO-DATE!!!
 
 ## AUTH 
 | name    | method | route        | params                        | parameter placement | returns                                                                                            | needs auth |
