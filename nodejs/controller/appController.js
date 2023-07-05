@@ -50,10 +50,10 @@ const useCronometer = async (req, res) => {
 
 /**
  * @param {Object} req                  request body
- * @param {string} req.body.project_id  project id to start cronometer on
  * @param {string} req.userId           user id to start cronometer on project. Received from middleware through access token
- * @param {Object} req.body.start_time  start time of work log (timestamp in milliseconds)
- * @param {Object} req.body.end_time    end time of work log (timestamp in milliseconds)
+ * @param {string} req.body.project_id  project id to start cronometer on
+ * @param {number} req.body.start_time  start time of work log (timestamp in milliseconds)
+ * @param {number} req.body.end_time    end time of work log (timestamp in milliseconds)
  * @returns {string} work_log_id        doc id of the started cronometer
  */
 const addWorkLog = async (req, res) => {
