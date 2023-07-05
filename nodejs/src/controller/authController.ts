@@ -1,120 +1,147 @@
-const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCustomToken } = require("firebase/auth");
-const { getFirestore, setDoc, doc } = require('firebase/firestore/lite')
-const axios = require('axios');
+import {
+	getAuth,
+	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword,
+	signInWithCustomToken,
+} from "firebase/auth";
+import { getFirestore, setDoc, doc } from "firebase/firestore/lite";
+import axios from "axios";
+import express, { Express, Request, Response } from "express";
+import { UserInfo, UserOutput } from "../types/user";
+import { RefreshTokenReqOutput } from "../types/firebase";
 
-const { app } = require('../firebase/firebaseConnection')
+const { app } = require("../firebase/firebaseConnection");
 
 const auth = getAuth();
 const db = getFirestore(app);
+const expiresIn = 3600; // 1 hour
 
-
-// ---- API FUNCTIONS ---- //
+/* ----------------------- */
+/* ---- API FUNCTIONS ---- */
+/* ----------------------- */
 /**
  * @param {Object} req                  request body
  * @param {string} req.body.email       user email
- * @param {string} req.body.password    user password 
+ * @param {string} req.body.password    user password
  * @param {string} req.body.name        user display name
- * @returns {Object}                    user info
- * @returns {string}                    user_info.uid
- * @returns {string}                    user_info.refreshToken
- * @returns {string}                    user_info.accessToken
- * @returns {string}                    user_info.expirationTime
-*/
-const firebaseSignUp = async (req, res) => {
+ * @returns {UserOutput}                user info
+ */
+async function firebaseSignUp(req: Request, res: Response) {
+	const { email, password, name } = req.body;
 
-    createUserWithEmailAndPassword(auth, req.body.email, req.body.password)
-        .then((userInfo) => {
-            let userRec = {
-                uid: userInfo.user.uid,
-                email: userInfo.user.email,
-                name: req.body.name
-            }
-            firebaseSetUserData(userRec)
+	if (!email || !password || !name) {
+		return res.status(400).send("Missing parameters in request body");
+	}
 
-            userInfo = {
-                uid: userInfo.user.uid,
-                refreshToken: userInfo.user.refreshToken,
-                accessToken: userInfo._tokenResponse.idToken,
-                expirationTime: userInfo._tokenResponse.expiresIn,
-            }
-            res.send(userInfo)
+	createUserWithEmailAndPassword(auth, email, password)
+		.then((userInfo) => {
+			let userRec = {
+				uid: userInfo.user.uid,
+				email: email,
+				name: name,
+			};
+			firebaseSetUserData(userRec);
 
-            //res.sendStatus(201)
-        })
+			var accessToken, expirationTime;
 
-        .catch((error) => {
-            res.end(JSON.stringify(error))
-        })
+			Promise.all([userInfo.user.getIdToken()]).then((token) => {
+				accessToken = token[0];
+				expirationTime = expiresIn;
+
+				res.status(201).send({
+					uid: userInfo.user.uid,
+					refreshToken: userInfo.user.refreshToken,
+					accessToken: accessToken,
+					expirationTime: expirationTime,
+				});
+			});
+		})
+
+		.catch((error) => {
+			res.status(500).send(error);
+		});
 }
 
 /**
  * @param {Object} req                  request body
  * @param {string} req.body.email       user email
  * @param {string} req.body.password    user password
- * @returns {Object}                    user info
- * @returns {string}                    user_info.uid
- * @returns {string}                    user_info.refreshToken
- * @returns {string}                    user_info.accessToken
- * @returns {string}                    user_info.expirationTime
+ * @returns {UserOutput}                user info
  */
-const firebaseSignIn = async (req, res) => {
-    signInWithEmailAndPassword(auth, req.body.email, req.body.password)
-        .then((userInfo) => {
-            console.log(userInfo)
-            userInfo = {
-                uid: userInfo.user.uid,
-                refreshToken: userInfo.user.refreshToken,
-                accessToken: userInfo._tokenResponse.idToken,
-                expirationTime: userInfo._tokenResponse.expiresIn,
-            }
-            res.send(userInfo)
-        })
+async function firebaseSignIn(req: Request, res: Response) {
+	const { email, password } = req.body;
 
-        .catch((error) => {
-            res.end(JSON.stringify(error))
-        })
+	if (!email || !password) {
+		return res.status(400).send("Missing parameters in request body");
+	}
+
+	signInWithEmailAndPassword(auth, req.body.email, req.body.password)
+		.then((userInfo) => {
+			var accessToken, expirationTime;
+
+			Promise.all([userInfo.user.getIdToken()]).then((token) => {
+				accessToken = token[0];
+				expirationTime = expiresIn;
+
+				res.status(200).send({
+					uid: userInfo.user.uid,
+					refreshToken: userInfo.user.refreshToken,
+					accessToken: accessToken,
+					expirationTime: expirationTime,
+				});
+			});
+		})
+
+		.catch((error) => {
+			res.status(500).send(error);
+		});
 }
 
 /**
  * @param {Object} req                      request body
  * @param {string} req.body.refreshToken    user refresh token
+ * @returns {UserOutput}                    user info
  */
-const firebaseSignInWithToken = async (req, res) => {
+async function firebaseSignInWithToken(req: Request, res: Response) {
+	const { refreshToken } = req.body;
 
-    try {
-        const response = await axios.post(`https://securetoken.googleapis.com/v1/token?key=${process.env.FIREBASE_CONFIG_API_KEY}`, {
-            grant_type: 'refresh_token',
-            refresh_token: req.body.refreshToken
-        });
+	if (!refreshToken) {
+		return res.status(400).send("Missing parameters in request body");
+	}
 
-        let userInfo = {
-            uid: response.data.user_id,
-            refreshToken: response.data.refresh_token,
-            accessToken: response.data.id_token,
-            expirationTime: response.data.expires_in,
-        }
+	try {
+		const response: any = await axios.post(
+			`https://securetoken.googleapis.com/v1/token?key=${process.env.FIREBASE_CONFIG_API_KEY}`,
+			{
+				grant_type: "refresh_token",
+				refresh_token: refreshToken,
+			}
+		);
 
-        res.send(userInfo);
-    } catch (error) {
-        console.error('Error refreshing access token:', error);
-    }
+		const resData: RefreshTokenReqOutput = response.data
+
+		res.status(200).send({
+			uid: resData.user_id,
+			refreshToken: resData.refresh_token,
+			accessToken: resData.id_token,
+			expirationTime: resData.expires_in,
+		});
+	} catch (error) {
+		res.status(500).send(error);
+	}
 }
 
-// ---- HELPER FUNCTIONS ---- //
+/* -------------------------- */
+/* ---- HELPER FUNCTIONS ---- */
+/* -------------------------- */
 /**
- * @param {Object} userInfo             user info
- * @param {string} userInfo.body.uid    user id
- * @param {string} userInfo.body.email  user email
- * @param {string} userInfo.body.name   user display name
+ * @param {UserInfo} userInfo             user info
  */
-const firebaseSetUserData = async (userInfo) => {
-
-    await setDoc(doc(db, "users", userInfo.uid), {
-        user_email: userInfo.email,
-        user_name: userInfo.name
-    })
-
+async function firebaseSetUserData(userInfo: UserInfo) {
+	await setDoc(doc(db, "users", userInfo.uid), {
+		user_email: userInfo.email,
+		user_name: userInfo.name,
+	});
 }
 
-
-module.exports = { firebaseSignUp, firebaseSignIn, firebaseSignInWithToken }
+module.exports = { firebaseSignUp, firebaseSignIn, firebaseSignInWithToken };

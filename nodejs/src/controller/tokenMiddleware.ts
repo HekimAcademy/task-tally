@@ -1,7 +1,7 @@
 /**
  * @fileoverview Middleware for validating Firebase access token
  */
-
+import express, { Express, Request, Response, NextFunction } from 'express';
 const admin = require('../firebase/firebaseAdminConnection')
 
 /**
@@ -9,7 +9,7 @@ const admin = require('../firebase/firebaseAdminConnection')
  * @param {string} req.headers.authorization    access token
  * @returns req.userId                          User UID from access token
  */
-const validateFirebaseIdToken = (req, res, next) => {
+const validateFirebaseIdToken = (req: Request, res: Response, next: NextFunction) => {
 
     // If Authorization header is set or not
     if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
@@ -22,12 +22,12 @@ const validateFirebaseIdToken = (req, res, next) => {
     idToken = req.headers.authorization.split('Bearer ')[1];
 
     // If access token is valid
-    admin.auth().verifyIdToken(idToken).then((decodedIdToken) => {
+    admin.auth().verifyIdToken(idToken).then((decodedIdToken: any) => {
         req.userId = decodedIdToken.uid;
         next();
-    }).catch(error => {
+    }).catch((error: any) => {
         console.error('Error:', error);
-        res.status(403).send('Unauthorized');
+        res.status(401).send('Unauthorized');
     });
 }
 

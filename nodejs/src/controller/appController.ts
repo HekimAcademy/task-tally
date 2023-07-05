@@ -15,7 +15,9 @@ import express, { Express, Request, Response } from "express";
 const { app } = require("../firebase/firebaseConnection");
 const db = getFirestore(app);
 
-// ---- API FUNCTIONS ---- //
+/* ----------------------- */
+/* ---- API FUNCTIONS ---- */
+/* ----------------------- */
 /**
  * @param {Object} req                  request body
  * @param {string} req.body.project_id  project id to start cronometer on
@@ -29,11 +31,13 @@ async function useCronometer(req: Request, res: Response) {
 	} = req;
 
 	if (!userId && !project_id && !start_time) {
+		return res.status(400).send("Missing parameters in request body");
 	}
 
 	if (!(await userIsInProject(userId!, project_id))) {
-		res.send("user is not in this project or project does not exist at all");
-		return;
+		return res.send(
+			"user is not in this project or project does not exist at all"
+		);
 	}
 
 	const [cronometerIsRunning, workLogDocId, WorkLogProjectId] =
@@ -45,11 +49,11 @@ async function useCronometer(req: Request, res: Response) {
 				end_time: Math.round(new Date().getTime() / 1000),
 			});
 
-			res.send("cronometer stopped");
-			return;
+			return res.send("cronometer stopped");
 		} else {
-			res.send("User already has cronometer going on in another project");
-			return;
+			return res.send(
+				"User already has cronometer going on in another project"
+			);
 		}
 	}
 
@@ -177,7 +181,9 @@ async function updateWorkLog(req: Request, res: Response) {
 	res.send("work log updated");
 }
 
-// ---- HELPER FUNCTIONS ---- //
+/* -------------------------- */
+/* ---- HELPER FUNCTIONS ---- */
+/* -------------------------- */
 /**
  *
  * @param {string} userId       user id to check if it exists
@@ -209,6 +215,12 @@ async function userHasCronometer(userId: string) {
 		where("end_time", "==", null)
 	);
 	const querySnapshot = await getDocs(q);
+
+		console.log(querySnapshot.size > 0)
+
+	if(!(querySnapshot.size > 0)) {
+		return [false, null, null]
+	}
 
 	return [
 		querySnapshot.size > 0,
@@ -249,7 +261,7 @@ module.exports = { useCronometer, addWorkLog, updateWorkLog };
  * res.status(200).send({}); // OK
  * res.status(201).send({}); // Created
  * res.status(204).send({}); // No Content
- * 
+ *
  * res.status(400).send({}); // Bad Request
  * res.status(401).send({}); // Unauthorized
  * res.status(403).send({}); // Forbidden

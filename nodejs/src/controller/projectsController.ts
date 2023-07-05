@@ -1,16 +1,28 @@
 /**
  * @description For handling projects requests
  * @todo Implement getting user_id by access token
- * @todo Implement if user has access to create 
+ * @todo Implement if user has access to create
  *       project via access token
  * @todo Implement only department managers can create projects
  */
-const { getFirestore, setDoc, doc, addDoc, collection, getDoc, query, where, getDocs } = require('firebase/firestore/lite')
-const { app } = require('../firebase/firebaseConnection')
+import {
+	getFirestore,
+	setDoc,
+	doc,
+	addDoc,
+	collection,
+	getDoc,
+	query,
+	where,
+	getDocs,
+} from "firebase/firestore/lite";
+const { app } = require("../firebase/firebaseConnection");
+import express, { Express, Request, Response } from "express";
 const db = getFirestore(app);
 
-
-// ---- API FUNCTIONS ---- //
+/* ----------------------- */
+/* ---- API FUNCTIONS ---- */
+/* ----------------------- */
 /**
  * @param {Object} req                           request body
  * @param {string} req.body.project_name         project name
@@ -19,75 +31,96 @@ const db = getFirestore(app);
  * @returns {Object}                             project info
  * @returns {string}                             project_info.project_id
  */
-const createProject = async (req, res) => {
-    const project = {
-        project_name: req.body.project_name,
-        description: req.body.description,
-        project_manager_id: req.body.project_manager_id,
-        department_id: req.body.department_id
-    }
+async function createProject(req: Request, res: Response) {
+	const {
+		userId,
+		body: { project_name, description, project_manager_id, department_id },
+	} = req;
 
-    if (!(await userExists(project.project_manager_id))) {
-        res.send("manager does not exist")
-        return;
-    }
+	if (
+		!userId &&
+		!project_name &&
+		!description &&
+		!project_manager_id &&
+		!department_id
+	) {
+		return res.status(400).send("Missing parameters in request body");
+	}
 
-    if (!await departmentExists(project.department_id)) {
-        res.send("department does not exist")
-        return;
-    }
+	if (!(await userExists(project_manager_id))) {
+		return res.status(404).send("Manager does not exist");
+	}
 
-    if (!(await userIsDepartmentManager(req.userId, project.department_id))) {
-        res.send("user is not the department manager")
-        return;
-    }
+	if (!(await departmentExists(department_id))) {
+		return res.status(404).send("Department does not exist");
+	}
 
+	if (!(await userIsDepartmentManager(userId!, department_id))) {
+		return res.status(403).send("User is not the department manager");
+	}
 
+	const docRef = await addDoc(collection(db, "projects"), {
+		project_name: project_name,
+		description: description,
+		project_manager_id: project_manager_id,
+		department_id: department_id,
+	});
 
-    const docRef = await addDoc(collection(db, "projects"), project);
-    res.send({ project_id: docRef.id })
+	res.status(201).send({ project_id: docRef.id });
 }
 
 /**
- * 
+ *
  * @param {Object} req                   request body
  * @param {string} req.body.project_id   project id to join
  * @param {string} req.userId            user id to join project. Received from middleware through access token
  */
-const joinProject = async (req, res) => {
-    const project = {
-        project_id: req.body.project_id,
-        user_id: req.userId
-    }
+async function joinProject(req: Request, res: Response) {
+	const {
+		userId,
+		body: { project_id },
+	} = req;
 
-    if (!(await projectExists(project.project_id))) {
-        res.send("project does not exist");
-        return;
-    }
-    if (await userIsInProject(project.project_id, project.user_id)) {
-        res.send("user is already in this project");
-        return;
-    }
+	if (!userId && !project_id) {
+		return res.status(400).send("Missing parameters in request body");
+	}
 
-    const docRef = await addDoc(collection(db, "user_projects"), project);
-    res.send('Success!')
+	if (!(await projectExists(project_id))) {
+		return res.status(404).send("project does not exist");
+	}
+
+	if (await userIsInProject(project_id, userId!)) {
+		return res.status(409).send("user is already in this project");
+	}
+
+	const docRef = await addDoc(collection(db, "user_projects"), {
+		user_id: userId,
+		project_id: project_id,
+	});
+	res.status(201).send("Success!");
 }
 
 /**
- * 
+ *
  * @param {Object} req                           request body
  * @param {string} req.params.projectId          project id to get
- * 
+ *
  */
-const getProject = async (req, res) => {
-    const docRef = doc(db, "projects", req.params.projectId);
-    const docSnap = await getDoc(docRef);
+async function getProject(req: Request, res: Response) {
+	const { projectId } = req.params;
 
-    if (docSnap.exists()) {
-        res.send(docSnap.data())
-    } else {
-        res.sendStatus(404)
-    }
+	if (!projectId) {
+		res.status(400).send("Missing parameters in request body");
+	}
+
+	const docRef = doc(db, "projects", projectId);
+	const docSnap = await getDoc(docRef);
+
+	if (docSnap.exists()) {
+		res.send(docSnap.data());
+	} else {
+		res.status(500);
+	}
 }
 
 /**
@@ -99,77 +132,83 @@ const getProject = async (req, res) => {
  * @returns {string}                             project.description
  * @returns {string}                             project.project_manager_id
  * @returns {string}                             project.department_id
-*/
-const getUserProjects = async (req, res) => {
+ */
+async function getUserProjects(req: Request, res: Response) {
+	const { userId } = req.params;
 
-    if (!(await userExists(req.params.userId))) {
-        res.send("user does not exist")
-        return;
-    }
+	if (!userId) {
+		res.status(400).send("Missing parameters in params");
+	}
 
-    const q = query(
-        collection(db, "user_projects"),
-        where("user_id", "==", req.params.userId),
-    );
+	if (!(await userExists(userId))) {
+		return res.status(404).send("user does not exist");
+	}
 
-    const querySnapshot = await getDocs(q);
+	const q = query(
+		collection(db, "user_projects"),
+		where("user_id", "==", userId)
+	);
 
-    const userProjects = []
-    for (const document of querySnapshot.docs) {
+	const querySnapshot = await getDocs(q);
 
-        const docRef = doc(db, "projects", document.data().project_id);
-        const docSnap = await getDoc(docRef);
+	const userProjects = [];
+	for (const document of querySnapshot.docs) {
+		const docRef = doc(db, "projects", document.data().project_id);
+		const docSnap = await getDoc(docRef);
 
-        project = docSnap.data()
-        project.project_id = docSnap.id;
+		let project = docSnap.data();
+		project!.project_id = docSnap.id;
 
-        userProjects.push(project)
-    }
+		userProjects.push(project);
+	}
 
-    res.send(userProjects)
+	res.send(userProjects);
 }
 
 /**
- * 
+ *
  * @param {Object} req                          request body
- * @param {string} req.params.departmentId      department id to get projects from 
+ * @param {string} req.params.departmentId      department id to get projects from
  * @returns {Object[]}                           array of projects
  * @returns {string}                             project.project_id
  * @returns {string}                             project.project_name
  * @returns {string}                             project.description
  * @returns {string}                             project.project_manager_id
  * @returns {string}                             project.department_id
- * @returns 
+ * @returns
  */
-const getDepartmentProjects = async (req, res) => {
+async function getDepartmentProjects(req: Request, res: Response) {
 
-    if (!(await departmentExists(req.params.departmentId))) {
-        res.send("department does not exist")
-        return;
+    const { departmentId } = req.params;
+
+    if (!departmentId) {
+        res.status(400).send("Missing parameters in params");
     }
 
-    const q = query(
-        collection(db, "projects"),
-        where("department_id", "==", req.params.departmentId),
-    );
+	if (!(await departmentExists(departmentId))) {
+		return res.status(404).send("Department does not exist");;
+	}
 
-    const querySnapshot = await getDocs(q);
+	const q = query(
+		collection(db, "projects"),
+		where("department_id", "==", departmentId)
+	);
 
-    const departmentProjects = []
-    for (const document of querySnapshot.docs) {
+	const querySnapshot = await getDocs(q);
 
-        const docRef = doc(db, "projects", document.id);
-        const docSnap = await getDoc(docRef);
+	const departmentProjects = [];
+	for (const document of querySnapshot.docs) {
+		const docRef = doc(db, "projects", document.id);
+		const docSnap = await getDoc(docRef);
 
-        project = docSnap.data()
-        project.project_id = docSnap.id;
+		let project = docSnap.data();
+		project!.project_id = docSnap.id;
 
-        departmentProjects.push(project)
-    }
+		departmentProjects.push(project);
+	}
 
-    res.send(departmentProjects)
+	res.send(departmentProjects);
 }
-
 
 /**
  * @returns {Object[]}                           array of projects
@@ -179,88 +218,83 @@ const getDepartmentProjects = async (req, res) => {
  * @returns {string}                             project.project_manager_id
  * @returns {string}                             project.department_id
  */
-const getAllProjects = async (req, res) => {
+async function getAllProjects(req: Request, res: Response) {
+	const q = query(collection(db, "projects"));
 
-    const q = query(
-        collection(db, "projects"),
-    );
+	const querySnapshot = await getDocs(q);
 
-    const querySnapshot = await getDocs(q);
+	const allProjects = [];
+	for (const document of querySnapshot.docs) {
+		const docRef = doc(db, "projects", document.id);
+		const docSnap = await getDoc(docRef);
 
-    const allProjects = []
-    for (const document of querySnapshot.docs) {
+		let project = docSnap.data();
+		project!.project_id = docSnap.id;
 
-        const docRef = doc(db, "projects", document.id);
-        const docSnap = await getDoc(docRef);
+		allProjects.push(project);
+	}
 
-        project = docSnap.data()
-        project.project_id = docSnap.id;
-
-        allProjects.push(project)
-    }
-
-    res.send(allProjects)
-
+	res.send(allProjects);
 }
 
+/* -------------------------- */
+/* ---- HELPER FUNCTIONS ---- */
+/* -------------------------- */
+const userExists = async (userId: string) => {
+	const userRef = doc(db, "users", userId);
+	const userSnap = await getDoc(userRef);
 
+	return userSnap.exists();
+};
 
+const projectExists = async (projectId: string) => {
+	const projectRef = doc(db, "projects", projectId);
+	const projectSnap = await getDoc(projectRef);
 
+	if (projectSnap.exists()) {
+		return true;
+	} else {
+		return false;
+	}
+};
 
-// ---- HELPER FUNCTIONS ---- //
-const userExists = async (userId) => {
+const userIsInProject = async (projectId: string, userId: string) => {
+	const q = query(
+		collection(db, "user_projects"),
+		where("project_id", "==", projectId),
+		where("user_id", "==", userId)
+	);
 
-    const userRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userRef);
+	const querySnapshot = await getDocs(q);
+	return querySnapshot.size > 0;
+};
 
-    return userSnap.exists()
+const userIsDepartmentManager = async (
+	userId: string,
+	departmentId: string
+) => {
+	const q = query(
+		collection(db, "department_managers"),
+		where("department_id", "==", departmentId),
+		where("user_id", "==", userId)
+	);
 
-}
+	const querySnapshot = await getDocs(q);
+	return querySnapshot.size > 0;
+};
 
-const projectExists = async (projectId) => {
+const departmentExists = async (departmentId: string) => {
+	const departmentRef = doc(db, "departments", departmentId);
+	const departmentSnap = await getDoc(departmentRef);
 
-    const projectRef = doc(db, "projects", projectId);
-    const projectSnap = await getDoc(projectRef);
+	return departmentSnap.exists();
+};
 
-    if (projectSnap.exists()) {
-        return true
-    } else {
-        return false
-    }
-
-}
-
-const userIsInProject = async (projectId, userId) => {
-
-    const q = query(
-        collection(db, "user_projects"),
-        where("project_id", "==", projectId),
-        where("user_id", "==", userId)
-    );
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.size > 0;
-
-}
-
-const userIsDepartmentManager = async (userId, departmentId) => {
-
-    const q = query(
-        collection(db, "department_managers"),
-        where("department_id", "==", departmentId),
-        where("user_id", "==", userId)
-    );
-
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.size > 0;
-}
-
-const departmentExists = async (departmentId) => {
-
-    const departmentRef = doc(db, "departments", departmentId);
-    const departmentSnap = await getDoc(departmentRef);
-
-    return departmentSnap.exists();
-}
-
-module.exports = { createProject, joinProject, getProject, getUserProjects, getDepartmentProjects, getAllProjects }
+module.exports = {
+	createProject,
+	joinProject,
+	getProject,
+	getUserProjects,
+	getDepartmentProjects,
+	getAllProjects,
+};

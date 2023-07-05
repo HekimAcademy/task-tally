@@ -7,11 +7,11 @@ const port = process.env.PORT;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-require('./firebase/firebaseConnection');
-require('./firebase/firebaseAdminConnection');
+require('./src/firebase/firebaseConnection');
+require('./src/firebase/firebaseAdminConnection');
 
 
-const router = require('./routes/appRouter');
+const router = require('./src/routes/appRouter');
 app.use("/", router);
 
 

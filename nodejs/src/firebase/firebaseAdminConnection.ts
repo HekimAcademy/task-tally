@@ -1,4 +1,4 @@
-const { initializeApp } = require('firebase-admin/app');
+import { initializeApp } from 'firebase-admin/app';
 const serviceAcoount = require('../env/service-account-credentials.json')
 const admin = require("firebase-admin");
 
