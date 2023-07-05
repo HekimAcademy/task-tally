@@ -16,7 +16,7 @@ const useCronometer = async (req, res) => {
     const workLog = {
         user_id: req.userId,
         project_id: req.body.project_id,
-        start_time: new Date(),
+        start_time: (Date().getTime()) / 1000,
         end_time: null
     }
 
@@ -31,7 +31,7 @@ const useCronometer = async (req, res) => {
 
             const docRef = doc(db, "work_logs", cronometerProject.id);
             await updateDoc(docRef, {
-                end_time: new Date(),
+                end_time: (Date().getTime()) / 1000
             });
 
             res.send("cronometer stopped")
@@ -47,6 +47,48 @@ const useCronometer = async (req, res) => {
     res.send({ work_log_id: docRef.id })
 }
 
+const addWorkLog = async (req, res) => {
+    
+        const workLog = {
+            user_id: req.userId,
+            project_id: req.body.project_id,
+            start_time: req.body.start_time,
+            end_time: req.body.end_time
+        }
+
+        if (workLog.start_time === undefined || workLog.end_time === undefined) {
+            res.send("start_time or end_time is undefined")
+            return
+        }
+
+        if (typeof workLog.start_time !== "number" || typeof workLog.end_time !== "number") {
+            res.send("start_time or end_time is not a number")
+            return
+        }
+
+        if (!isTimestamp(workLog.start_time) || !isTimestamp(workLog.end_time)) {
+            res.send("start_time or end_time is not a timestamp")
+            return
+        }
+
+        if (workLog.start_time > workLog.end_time) {
+            res.send("start_time is greater than end_time")
+            return
+        }
+
+        if (workLog.start_time === workLog.end_time) {
+            res.send("start_time is equal to end_time")
+            return
+        }
+    
+        if (!(await userIsInProject(workLog.user_id, workLog.project_id))) {
+            res.send("user is not in this project or project does not exist at all")
+            return
+        }
+    
+        const docRef = await addDoc(collection(db, "work_logs"), workLog);
+        res.send({ work_log_id: docRef.id })
+}
 
 
 
@@ -82,6 +124,19 @@ const userHasCronometer = async (userId) => {
     const querySnapshot = await getDocs(q);
 
     return [querySnapshot.size > 0, querySnapshot.docs[0]];
+}
+
+
+// Function for checking if the given value is a timestamp (for example: 1688498722084)
+const isTimestamp = (value) => {
+    return (
+        value.toString().length === 13 
+        && !isNaN(value)  
+        && value > 0 
+        && value < 32503680000000 
+        && value % 1 === 0 
+        && value > 1609459200000
+        )
 }
 
 
