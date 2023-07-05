@@ -1,12 +1,12 @@
-const express = require('express');
-const app = express();
-const port = 3000;
+import express, { Express, Request, Response } from 'express';
+require('dotenv').config();
+
+const app: Express = express();
+const port = process.env.PORT;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-require('dotenv').config();
 require('./firebase/firebaseConnection');
 require('./firebase/firebaseAdminConnection');
 

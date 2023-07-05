@@ -1,6 +1,9 @@
 
 # TASK-TALLY
 
+
+## Res.Statuses
+
 ## TO-DO
 * Arrange res.statuses.
 * Create leaving project logic.
