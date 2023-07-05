@@ -11,6 +11,10 @@
 * getDepartment, getManager and getMembers should work together. Right now getDepartment uses different functions for receiving manager and members.
 
 ___
+
+
+## NOT UP-TO-DATE
+
 :heavy_check_mark:
 :x:
 
