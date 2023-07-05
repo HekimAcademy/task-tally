@@ -16,7 +16,7 @@ const useCronometer = async (req, res) => {
     const workLog = {
         user_id: req.userId,
         project_id: req.body.project_id,
-        start_time: (new Date().getTime()) / 1000,
+        start_time: Math.round((new Date().getTime()) / 1000),
         end_time: null
     }
 
@@ -31,7 +31,7 @@ const useCronometer = async (req, res) => {
 
             const docRef = doc(db, "work_logs", cronometerProject.id);
             await updateDoc(docRef, {
-                end_time: (new Date().getTime()) / 1000
+                end_time: Math.round((new Date().getTime()) / 1000)
             });
 
             res.send("cronometer stopped")
