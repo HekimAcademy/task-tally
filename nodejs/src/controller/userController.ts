@@ -1,0 +1,117 @@
+import { Express, Request, Response } from "express";
+import {
+	getFirestore,
+	setDoc,
+	doc,
+	addDoc,
+	collection,
+	getDoc,
+	query,
+	where,
+	getDocs,
+	updateDoc,
+} from "firebase/firestore/lite";
+const { app } = require("../firebase/firebaseConnection");
+const db = getFirestore(app);
+
+/* ----------------------- */
+/* ---- API FUNCTIONS ---- */
+/* ----------------------- */
+/**
+ * @returns {Object[]}                             array of user info
+ * @returns {string}                               user_info.user_uid
+ * @returns {string}                               user_info.user_name
+ * @returns {string}                               user_info.user_email
+ */
+async function getAllUsers(req: Request, res: Response) {
+	const q = query(collection(db, "users"));
+
+	const querySnapshot = await getDocs(q);
+	res.status(200).send(
+		querySnapshot.docs.map((doc) => {
+			let data = doc.data();
+			data.user_uid = doc.id;
+			return data;
+		})
+	);
+}
+
+/**
+ * @param {Object} req                           request body
+ * @param {string} req.body.type                 id or email
+ * @param {string} req.body.id                   user id
+ * @param {string} req.body.email                user email
+ * @returns {Object}                             user info
+ * @returns {string}                             user_info.user_uid
+ * @returns {string}                             user_info.user_name
+ * @returns {string}                             user_info.user_email
+ */
+async function getUser(req: Request, res: Response) {
+	const { type, id, email } = req.body;
+
+	var user;
+
+	switch (type) {
+		case "id":
+			user = await getUserById(id);
+			break;
+		case "email":
+			user = await getUserByEmail(email);
+			break;
+	}
+
+	console.log(user);
+
+	res.status(200).send(user);
+}
+
+/**
+ *
+ * @param {Object} req                         request body
+ * @param {string} req.params.userId           user id to get work logs from
+ */
+async function getUserWorkLogs(req: Request, res: Response) {
+	const user_id = req.params.userId;
+
+	if (!user_id) {
+		return res.status(400).send("Missing parameter in request params");
+	}
+
+	const q = query(collection(db, "work_logs"), where("user_id", "==", user_id));
+
+	const querySnapshot = await getDocs(q);
+	res.send(querySnapshot.docs.map((doc) => doc.data()));
+}
+
+/* -------------------------- */
+/* ---- HELPER FUNCTIONS ---- */
+/* -------------------------- */
+const getUserById = async (userId: string) => {
+	const docRef = doc(db, "users", userId);
+	const docSnap = await getDoc(docRef);
+
+	if (!docSnap.exists()) {
+		return;
+	}
+
+	let data = docSnap.data();
+	data.user_uid = docSnap.id;
+
+	return data;
+};
+
+const getUserByEmail = async (email: string) => {
+	const q = query(collection(db, "users"), where("user_email", "==", email));
+
+	const querySnapshot = await getDocs(q);
+	if (querySnapshot.docs.length === 0) {
+		return;
+	}
+
+	let data = querySnapshot.docs[0].data();
+	data.user_uid = querySnapshot.docs[0].id;
+
+	return data;
+};
+
+module.exports = { getAllUsers, getUser, getUserWorkLogs };
