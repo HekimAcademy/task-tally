@@ -7,7 +7,6 @@
 npm run dev
 
 ## TO-DO
-* !Edit department
 * !Edit project
 * !Edit user
 * User profiles.
