@@ -1,11 +1,36 @@
 
-# TASK-TALLY
+<div>
+<h1 align="center"> TASK TALLY </h1>
+<h2 align="center"> NodeJS & Express App </h2>
+</div>
+<style>
+    h1, h2 {
+    border-bottom: 0;
+    padding-bottom: 0;
+    margin: 0;
+}
+</style>
 
-[POSTMAN LINK](https://www.postman.com/supply-operator-41990931/workspace/hekimacademy/collection/25530300-84c4cfdc-ccde-497c-8b4c-ae59ff99328f)
+---
+## Getting Started
 
-## RUN
-npm run dev
+### Setup
+After setting .env and ./src/env/service-account-credentials.json run the commands below.
 
+``` console
+> npm install
+> npm build
+> npm run copy
+> npm run dev
+```
+
+### Links
+
+[Postman](https://www.postman.com/supply-operator-41990931/workspace/hekimacademy/collection/25530300-84c4cfdc-ccde-497c-8b4c-ae59ff99328f)
+
+---
+## API Routes
+---
 ## TO-DO
 * Get user route should change
 * User profiles.
