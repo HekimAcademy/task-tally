@@ -7,13 +7,13 @@
 npm run dev
 
 ## TO-DO
-* !Edit project
 * !Edit user
 * User profiles.
 * Arrange res.statuses.
 * User and worklog routes look bad.
 
 * Should it check if cronometer is running before letting user update worklog 
+* Leave functions might be post instead of del
 ___
 
 

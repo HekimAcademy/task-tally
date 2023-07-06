@@ -152,6 +152,56 @@ async function leaveProject(req: Request, res: Response) {
 
 }
 
+async function editProject(req: Request, res: Response) {
+	const {
+		userId,
+		body: { project_id, project_name, description, project_manager_id },
+	} = req;
+
+	if (!project_id) {
+		return res.status(400).send("Missing parameters in request body");
+	}
+
+	if (
+		!project_name &&
+		!description &&
+		!project_manager_id
+	) {
+		return res.status(400).send("Missing parameters in request body");
+	}
+
+	if (!(await projectExists(project_id))) {
+		return res.status(404).send("project does not exist");
+	}
+
+	if (!(await userExists(project_manager_id))) {
+		return res.status(404).send("Manager does not exist");
+	}
+
+	const department_id = await getDepartmentIdFromProjectId(project_id)
+
+	if (
+		!(await userIsProjectManager(userId!, project_id)) ||
+		!(await userIsDepartmentManager(userId!, department_id))||
+		!(await userIsAdmin(userId!))
+	) {
+		return res.status(403).send("User is not authorized to edit this project");
+	}
+
+	const docRef = doc(db, "projects", project_id);
+	await setDoc(
+		docRef,
+		{
+			project_name: project_name,
+			description: description,
+			project_manager_id: project_manager_id,
+		},
+		{ merge: true }
+	);
+
+	res.status(200).send("Success!");
+}
+
 /**
  *
  * @param {Object} req                           request body
@@ -366,6 +416,31 @@ async function getProjectUsers(projectId: string) {
 	return projectUsers;
 }
 
+async function userIsProjectManager(userId: string, projectId: string) {
+	const projectRef = doc(db, "projects", projectId);
+	const projectSnap = await getDoc(projectRef);
+
+	const project = projectSnap.data();
+
+	return project!.project_manager_id === userId;
+}
+
+async function userIsAdmin(userId: string) {
+	const q = query(collection(db, "admins"), where("user_id", "==", userId));
+
+	const querySnapshot = await getDocs(q);
+	return querySnapshot.size > 0;
+}
+
+async function getDepartmentIdFromProjectId(project_id: string) {
+	const projectRef = doc(db, "projects", project_id);
+	const projectSnap = await getDoc(projectRef);
+
+	const project = projectSnap.data();
+
+	return project!.department_id;
+}
+
 module.exports = {
 	createProject,
 	joinProject,
@@ -373,5 +448,6 @@ module.exports = {
 	getUserProjects,
 	getDepartmentProjects,
 	getAllProjects,
-	leaveProject
+	leaveProject,
+	editProject
 };

@@ -2,7 +2,7 @@ const Router = require('express').Router()
 
 
 const { firebaseSignUp, firebaseSignIn, firebaseSignInWithToken } = require('../controller/authController')
-const { createProject, getProject, getUserProjects, joinProject, getDepartmentProjects, getAllProjects, leaveProject } = require('../controller/projectsController')
+const { createProject, getProject, getUserProjects, joinProject, getDepartmentProjects, getAllProjects, leaveProject, editProject } = require('../controller/projectsController')
 const { useCronometer, addWorkLog, updateWorkLog } = require('../controller/appController')
 const { createDepartment, joinDepartment, leaveDepartment, makeDepartmentManager, getDepartment, getDepartments, editDepartment } = require('../controller/departmentController')
 const { getAllUsers, getUser, getUserWorkLogs } = require('../controller/userController')
@@ -18,6 +18,7 @@ Router.post('/auth/signIn/token', firebaseSignInWithToken)
 Router.post('/projects', validateFirebaseIdToken, createProject)
 Router.post('/projects/join', validateFirebaseIdToken, joinProject)
 Router.delete('/projects/leave', validateFirebaseIdToken, leaveProject) //not sure about the method
+Router.put('/projects/edit', validateFirebaseIdToken, editProject) //not sure about the method
 Router.get('/projects', validateFirebaseIdToken, getAllProjects)
 Router.get('/projects/:projectId', validateFirebaseIdToken, getProject)
 Router.get('/projects/user/:userId', validateFirebaseIdToken, getUserProjects)
