@@ -31,6 +31,7 @@ import {
 	getDocs,
 	updateDoc,
 	deleteDoc,
+	DocumentData,
 } from "firebase/firestore/lite";
 import express, { Express, Request, Response } from "express";
 import { DepartmentInfo } from "../types/department";
@@ -289,8 +290,18 @@ async function getDepartment(req: Request, res: Response) {
 	const departmentManager = await getDepartmentManagerId(departmentSnap.id);
 	const departmentMembers = await getDepartmentMembersId(departmentSnap.id);
 
-	data.department_manager = departmentManager;
-	data.department_members = departmentMembers;
+	let members: Array<DocumentData> = [];
+	for (const member of departmentMembers) { 
+		console.log(member)
+		const user = await getUserById(member);
+		console.log(user)
+		members.push(user!);
+	}
+
+	console.log(members)
+
+	data.department_manager = departmentManager[0];
+	data.department_members = members;
 
 	res.status(200).send(data);
 }
@@ -380,6 +391,20 @@ async function getDepartmentMembersId(department_id: string) {
 	const members = [];
 	return querySnapshot.docs.map((doc) => doc.data().user_id);
 }
+
+const getUserById = async (userId: string) => {
+	const docRef = doc(db, "users", userId);
+	const docSnap = await getDoc(docRef);
+
+	if (!docSnap.exists()) {
+		return;
+	}
+
+	let data = docSnap.data();
+	data.user_uid = docSnap.id;
+
+	return data;
+};
 
 module.exports = {
 	createDepartment,
