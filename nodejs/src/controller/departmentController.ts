@@ -47,7 +47,11 @@ const db = getFirestore(app);
  * @returns {Object}                             department info
  */
 async function createDepartment(req: Request, res: Response) {
-	const { department_name } = req.body;
+	const { userId, body:{department_name} } = req;
+
+	if (!(await isAdmin(userId!))) {
+		return res.status(403).send("Not authorized for this action.");
+	}
 
 	if (!department_name) {
 		return res.status(400).send("Missing parameters in request body");
@@ -173,7 +177,11 @@ async function leaveDepartment(req: Request, res: Response) {
  * @param {string} req.body.user_id         User id to remove from department
  */
 async function makeDepartmentManager(req: Request, res: Response) {
-	const { department_id, user_id } = req.body;
+	const { userId, body: {department_id, user_id} } = req;
+
+	if(!(await isAdmin(userId!))) {
+		return res.status(403).send("Not authorized for this action.");
+	}
 
 	if (!(await departmentExists(department_id))) {
 		return res.status(404).send("Department does not exist");
@@ -333,6 +341,15 @@ async function getUserById(userId: string) {
 
 	return data;
 };
+
+async function isAdmin(userId: string) {
+	const q = query(
+		collection(db, "admins"),
+		where("user_id", "==", userId)
+	);
+	const querySnapshot = await getDocs(q);
+	return querySnapshot.size > 0;
+}
 
 module.exports = {
 	createDepartment,

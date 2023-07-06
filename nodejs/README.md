@@ -7,7 +7,6 @@
 npm run dev
 
 ## TO-DO
-* !Department can be created only by admin
 * !Edit department
 * !Edit project
 * !Edit user
