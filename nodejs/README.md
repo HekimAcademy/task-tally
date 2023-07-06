@@ -10,9 +10,7 @@ npm run dev
 * Arrange res.statuses.
 * User profiles.
 * User and worklog routes look bad.
-* getDepartment, getManager and getMembers should work together. Right now getDepartment uses different functions for receiving manager and members.
 * Department can be created only by admin
-* Create department should return department id
 
 * Should it check if cronometer is running before letting user update worklog 
 ___
