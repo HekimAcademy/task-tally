@@ -6,6 +6,7 @@ const { createProject, getProject, getUserProjects, joinProject, getDepartmentPr
 const { useCronometer, addWorkLog, updateWorkLog } = require('../controller/appController')
 const { createDepartment, joinDepartment, leaveDepartment, makeDepartmentManager, getDepartment, getDepartments } = require('../controller/departmentController')
 const { getAllUsers, getUser, getUserWorkLogs } = require('../controller/userController')
+const { makeAdmin, removeAdmin, getAdmins } = require('../controller/adminController')
 
 const { validateFirebaseIdToken } = require('../controller/tokenMiddleware')
 
@@ -35,10 +36,11 @@ Router.post('/departments', validateFirebaseIdToken, createDepartment)
 Router.post('/departments/join', validateFirebaseIdToken, joinDepartment)
 Router.delete('/departments/leave', validateFirebaseIdToken, leaveDepartment)
 Router.post('/departments/makeManager', validateFirebaseIdToken, makeDepartmentManager)
-//Router.get('/departments/:departmentId/members', validateFirebaseIdToken, getDepartmentMembers)
-//Router.get('/departments/:departmentId/manager', validateFirebaseIdToken, getDepartmentManager)
 Router.get('/departments/:departmentId', validateFirebaseIdToken, getDepartment)
 Router.get('/departments', validateFirebaseIdToken, getDepartments)
 
+Router.post('/admins/make', validateFirebaseIdToken, makeAdmin)
+Router.delete('/admins/remove', validateFirebaseIdToken, removeAdmin)
+Router.get('/admins', validateFirebaseIdToken, getAdmins)
 
 module.exports = Router
