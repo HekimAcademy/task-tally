@@ -216,10 +216,10 @@ async function userHasCronometer(userId: string) {
 	);
 	const querySnapshot = await getDocs(q);
 
-		console.log(querySnapshot.size > 0)
+	console.log(querySnapshot.size > 0);
 
-	if(!(querySnapshot.size > 0)) {
-		return [false, null, null]
+	if (!(querySnapshot.size > 0)) {
+		return [false, null, null];
 	}
 
 	return [
