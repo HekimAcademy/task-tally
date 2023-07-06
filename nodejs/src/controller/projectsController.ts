@@ -16,6 +16,7 @@ import {
 	query,
 	where,
 	getDocs,
+	updateDoc,
 } from "firebase/firestore/lite";
 const { app } = require("../firebase/firebaseConnection");
 import express, { Express, Request, Response } from "express";
@@ -102,7 +103,6 @@ async function joinProject(req: Request, res: Response) {
 }
 
 async function leaveProject(req: Request, res: Response) {
-
 	const {
 		userId,
 		body: { project_id, user_id },
@@ -112,7 +112,7 @@ async function leaveProject(req: Request, res: Response) {
 		return res.status(400).send("Missing parameters in request body");
 	}
 
-	let userToBeRemoved = userId
+	let userToBeRemoved = userId;
 
 	if (user_id) {
 		if (!(await userExists(user_id))) {
@@ -123,10 +123,8 @@ async function leaveProject(req: Request, res: Response) {
 			return res.status(409).send("user is not in this project");
 		}
 
-		userToBeRemoved = user_id
+		userToBeRemoved = user_id;
 	}
-
-
 
 	if (!(await projectExists(project_id))) {
 		return res.status(404).send("project does not exist");
@@ -149,7 +147,6 @@ async function leaveProject(req: Request, res: Response) {
 	}
 
 	res.status(200).send("Success!");
-
 }
 
 async function editProject(req: Request, res: Response) {
@@ -162,11 +159,7 @@ async function editProject(req: Request, res: Response) {
 		return res.status(400).send("Missing parameters in request body");
 	}
 
-	if (
-		!project_name &&
-		!description &&
-		!project_manager_id
-	) {
+	if (!project_name && !description && !project_manager_id) {
 		return res.status(400).send("Missing parameters in request body");
 	}
 
@@ -174,30 +167,32 @@ async function editProject(req: Request, res: Response) {
 		return res.status(404).send("project does not exist");
 	}
 
-	if (!(await userExists(project_manager_id))) {
-		return res.status(404).send("Manager does not exist");
-	}
-
-	const department_id = await getDepartmentIdFromProjectId(project_id)
+	const department_id = await getDepartmentIdFromProjectId(project_id);
 
 	if (
-		!(await userIsProjectManager(userId!, project_id)) ||
-		!(await userIsDepartmentManager(userId!, department_id))||
+		!(await userIsProjectManager(userId!, project_id)) &&
+		!(await userIsDepartmentManager(userId!, department_id)) &&
 		!(await userIsAdmin(userId!))
 	) {
 		return res.status(403).send("User is not authorized to edit this project");
 	}
 
+	let updateData: any = {};
+
+	if (project_name) {
+		updateData.project_name = project_name;
+	}
+
+	if (description) {
+		updateData.description = description;
+	}
+
+	if (project_manager_id) {
+		updateData.project_manager_id = project_manager_id;
+	}
+
 	const docRef = doc(db, "projects", project_id);
-	await setDoc(
-		docRef,
-		{
-			project_name: project_name,
-			description: description,
-			project_manager_id: project_manager_id,
-		},
-		{ merge: true }
-	);
+	const update = await updateDoc(docRef, updateData);
 
 	res.status(200).send("Success!");
 }
@@ -449,5 +444,5 @@ module.exports = {
 	getDepartmentProjects,
 	getAllProjects,
 	leaveProject,
-	editProject
+	editProject,
 };
