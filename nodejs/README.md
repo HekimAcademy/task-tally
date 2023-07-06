@@ -8,7 +8,6 @@ npm run dev
 
 ## TO-DO
 * Arrange res.statuses.
-* Create leaving project logic.
 * User profiles.
 * User and worklog routes look bad.
 * getDepartment, getManager and getMembers should work together. Right now getDepartment uses different functions for receiving manager and members.

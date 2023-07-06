@@ -4,7 +4,7 @@ const Router = require('express').Router()
 const { firebaseSignUp, firebaseSignIn, firebaseSignInWithToken } = require('../controller/authController')
 const { createProject, getProject, getUserProjects, joinProject, getDepartmentProjects, getAllProjects, leaveProject } = require('../controller/projectsController')
 const { useCronometer, addWorkLog, updateWorkLog } = require('../controller/appController')
-const { createDepartment, joinDepartment, leaveDepartment, makeDepartmentManager, getDepartmentMembers, getDepartmentManager, getDepartment, getDepartments } = require('../controller/departmentController')
+const { createDepartment, joinDepartment, leaveDepartment, makeDepartmentManager, getDepartment, getDepartments } = require('../controller/departmentController')
 const { getAllUsers, getUser, getUserWorkLogs } = require('../controller/userController')
 
 const { validateFirebaseIdToken } = require('../controller/tokenMiddleware')
