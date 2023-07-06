@@ -86,7 +86,7 @@ async function getUserWorkLogs(req: Request, res: Response) {
 /* -------------------------- */
 /* ---- HELPER FUNCTIONS ---- */
 /* -------------------------- */
-const getUserById = async (userId: string) => {
+async function getUserById(userId: string) {
 	const docRef = doc(db, "users", userId);
 	const docSnap = await getDoc(docRef);
 
@@ -100,7 +100,7 @@ const getUserById = async (userId: string) => {
 	return data;
 };
 
-const getUserByEmail = async (email: string) => {
+async function getUserByEmail(email: string) {
 	const q = query(collection(db, "users"), where("user_email", "==", email));
 
 	const querySnapshot = await getDocs(q);
