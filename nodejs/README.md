@@ -3,14 +3,6 @@
 <h1 align="center"> TASK TALLY </h1>
 <h2 align="center"> NodeJS & Express App </h2>
 </div>
-<style>
-    h1, h2 {
-    border-bottom: 0;
-    padding-bottom: 0;
-    margin: 0;
-}
-</style>
-
 ---
 ## Getting Started
 
