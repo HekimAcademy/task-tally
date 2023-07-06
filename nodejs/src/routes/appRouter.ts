@@ -5,7 +5,7 @@ const { firebaseSignUp, firebaseSignIn, firebaseSignInWithToken } = require('../
 const { createProject, getProject, getUserProjects, joinProject, getDepartmentProjects, getAllProjects, leaveProject, editProject } = require('../controller/projectsController')
 const { useCronometer, addWorkLog, updateWorkLog } = require('../controller/appController')
 const { createDepartment, joinDepartment, leaveDepartment, makeDepartmentManager, getDepartment, getDepartments, editDepartment } = require('../controller/departmentController')
-const { getAllUsers, getUser, getUserWorkLogs } = require('../controller/userController')
+const { getAllUsers, getUser, getUserWorkLogs, editUser } = require('../controller/userController')
 const { makeAdmin, removeAdmin, getAdmins } = require('../controller/adminController')
 
 const { validateFirebaseIdToken } = require('../controller/tokenMiddleware')
@@ -32,6 +32,7 @@ Router.put('/app/:workLogId', validateFirebaseIdToken, updateWorkLog)
 Router.get('/users', validateFirebaseIdToken, getAllUsers)
 Router.get('/user', validateFirebaseIdToken, getUser)
 Router.get('/users/:userId/workLogs', validateFirebaseIdToken, getUserWorkLogs)
+Router.put('/users/:userId', validateFirebaseIdToken, editUser)
 
 Router.post('/departments', validateFirebaseIdToken, createDepartment)
 Router.post('/departments/join', validateFirebaseIdToken, joinDepartment)

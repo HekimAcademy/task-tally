@@ -83,6 +83,37 @@ async function getUserWorkLogs(req: Request, res: Response) {
 	res.send(querySnapshot.docs.map((doc) => doc.data()));
 }
 
+async function editUser(req: Request, res: Response) {
+	
+	const senderId = req.userId;
+
+	const {
+		params: { userId },
+		body: { user_name },
+	} = req;
+
+	if (!userId) {
+		return res.status(400).send("Missing parameter in request params");
+	}
+
+	if (!user_name) {
+		return res.status(400).send("Missing parameters in request body");
+	}
+
+	if (!(await userExists(userId))) {
+		return res.status(404).send("User does not exist");
+	}
+
+	if (userId !== senderId) {
+		return res.status(403).send("User is not authorized to edit this user");
+	}
+
+	const docRef = doc(db, "users", userId);
+	const update = await updateDoc(docRef, { user_name: user_name });
+
+	res.status(200).send("Success!");
+}
+
 /* -------------------------- */
 /* ---- HELPER FUNCTIONS ---- */
 /* -------------------------- */
@@ -98,7 +129,7 @@ async function getUserById(userId: string) {
 	data.user_uid = docSnap.id;
 
 	return data;
-};
+}
 
 async function getUserByEmail(email: string) {
 	const q = query(collection(db, "users"), where("user_email", "==", email));
@@ -112,6 +143,13 @@ async function getUserByEmail(email: string) {
 	data.user_uid = querySnapshot.docs[0].id;
 
 	return data;
-};
+}
 
-module.exports = { getAllUsers, getUser, getUserWorkLogs };
+async function userExists(userId: string) {
+	const docRef = doc(db, "users", userId);
+	const docSnap = await getDoc(docRef);
+
+	return docSnap.exists();
+}
+
+module.exports = { getAllUsers, getUser, getUserWorkLogs, editUser };

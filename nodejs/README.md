@@ -7,7 +7,7 @@
 npm run dev
 
 ## TO-DO
-* !Edit user
+* Get user route should change
 * User profiles.
 * Arrange res.statuses.
 * User and worklog routes look bad.
