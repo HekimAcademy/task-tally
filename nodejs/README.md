@@ -7,10 +7,13 @@
 npm run dev
 
 ## TO-DO
-* Arrange res.statuses.
+* !Department can be created only by admin
+* !Edit department
+* !Edit project
+* !Edit user
 * User profiles.
+* Arrange res.statuses.
 * User and worklog routes look bad.
-* Department can be created only by admin
 
 * Should it check if cronometer is running before letting user update worklog 
 ___
