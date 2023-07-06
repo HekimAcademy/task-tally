@@ -3,7 +3,7 @@
 <h1 align="center"> TASK TALLY </h1>
 <h2 align="center"> NodeJS & Express App </h2>
 </div>
----
+
 ## Getting Started
 
 ### Setup
