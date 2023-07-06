@@ -203,6 +203,39 @@ async function makeDepartmentManager(req: Request, res: Response) {
 	}
 }
 
+/** 
+ * @param {Object} req                     		Request object
+ * @param {string} req.userId               	Api callers user id
+ * @param {string} req.body.department_id  		Department ID
+ * @param {string} req.body.department_name		User id to remove from department
+ */
+async function editDepartment(req: Request, res: Response) {
+	const { userId, body: {department_id, department_name} } = req;
+
+	if(!(await isAdmin(userId!)) || !(await userIsDepartmentManager(userId!, department_id))) {
+		return res.status(403).send("Not authorized for this action.");
+	}
+
+	if (!(await departmentExists(department_id))) {
+		return res.status(404).send("Department does not exist");
+	}
+
+	if (await departmentNameExists(department_name)) {
+		return res.status(409).send("Department name already exists");
+	}
+
+	try {
+		const docRef = await updateDoc(doc(db, "departments", department_id), {
+			department_name: department_name,
+		});
+
+		res.sendStatus(200);
+	} catch (e) {
+		console.error("Error updating document: ", e);
+		res.status(500).send("Error updating department");
+	}
+}
+
 /**
  * @param {Object} req                      Request object
  * @param {string} req.body.department_id   Department ID
@@ -354,7 +387,8 @@ async function isAdmin(userId: string) {
 module.exports = {
 	createDepartment,
 	joinDepartment,
-	leaveDepartment,
+	leaveDepartment, 
+	editDepartment,
 	makeDepartmentManager,
 	getDepartment,
 	getDepartments,
