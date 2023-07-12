@@ -13,3 +13,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 console.log("Firebase connection established!")
+export default firebaseConfig

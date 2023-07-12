@@ -1,36 +1,24 @@
-// NavigationConfig.js
-
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-import SignInScreen from '../screens/SignIn';
-import SignUpScreen from '../screens/SignUp';
-
+import { NavigationContainer } from '@react-navigation/native'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import React from 'react'
+import { View, Text } from 'react-native'
 import HomeScreen from '../screens/Home';
+import welcome from '../screens/welcome'
+import SignUp from '../screens/SignUp'
+import SignIn from '../screens/SignIn'
+const stack = createNativeStackNavigator();
 
-const AuthStack = createNativeStackNavigator();
-const HomeStack = createNativeStackNavigator();
 
-const AuthNavigator = () => (
-  <AuthStack.Navigator initialRouteName="SignIn">
-    <AuthStack.Screen name="SignIn" component={SignInScreen} />
-    <AuthStack.Screen name="SignUp" component={SignUpScreen} />
-  </AuthStack.Navigator>
-);
+export default function appNavigation() {
+  return (
+    <NavigationContainer>
+      <stack.Navigator>
+        <stack.Screen name='Welcome' options={{ headerShown: false }} component={welcome} />
+        <stack.Screen name='SignIn' options={{ headerShown: false }} component={SignIn} />
+        <stack.Screen name='SignUp' options={{ headerShown: false }} component={SignUp} />
+        <stack.Screen name='Home' options={{ headerShown: false }} component={HomeScreen} />
 
-const HomeNavigator = () => (
-  <HomeStack.Navigator initialRouteName="Home">
-    <HomeStack.Screen name="Home" component={HomeScreen} />
-  </HomeStack.Navigator>
-);
-
-const NavigationConfig = () => (
-  <NavigationContainer>
-    <HomeNavigator/>
-  </NavigationContainer>
-);
-
-export default NavigationConfig;
-
-// {userLoggedIn ? <HomeNavigator /> : <AuthNavigator />}
+      </stack.Navigator>
+    </NavigationContainer>
+  )
+}
