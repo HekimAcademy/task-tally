@@ -47,7 +47,11 @@ const db = getFirestore(app);
  * @returns {Object}                             department info
  */
 async function createDepartment(req: Request, res: Response) {
-	const { department_name } = req.body;
+	const { userId, body:{department_name} } = req;
+
+	if (!(await isAdmin(userId!))) {
+		return res.status(403).send("Not authorized for this action.");
+	}
 
 	if (!department_name) {
 		return res.status(400).send("Missing parameters in request body");
@@ -61,7 +65,7 @@ async function createDepartment(req: Request, res: Response) {
 		const docRef = await addDoc(collection(db, "departments"), {
 			department_name: department_name,
 		});
-		res.status(200).send("Department Created");
+		res.status(200).send({ department_id: docRef.id});
 	} catch (error) {
 		res.status(500).send(error);
 	}
@@ -173,7 +177,11 @@ async function leaveDepartment(req: Request, res: Response) {
  * @param {string} req.body.user_id         User id to remove from department
  */
 async function makeDepartmentManager(req: Request, res: Response) {
-	const { department_id, user_id } = req.body;
+	const { userId, body: {department_id, user_id} } = req;
+
+	if(!(await isAdmin(userId!))) {
+		return res.status(403).send("Not authorized for this action.");
+	}
 
 	if (!(await departmentExists(department_id))) {
 		return res.status(404).send("Department does not exist");
@@ -195,75 +203,36 @@ async function makeDepartmentManager(req: Request, res: Response) {
 	}
 }
 
-/**
- * @param {Object} req                      Request object
- * @param {string} req.body.department_id   Department ID
- * @returns {Object}                        Department members
+/** 
+ * @param {Object} req                     		Request object
+ * @param {string} req.userId               	Api callers user id
+ * @param {string} req.body.department_id  		Department ID
+ * @param {string} req.body.department_name		User id to remove from department
  */
-async function getDepartmentMembers(req: Request, res: Response) {
-	const department_id = req.params.departmentId;
+async function editDepartment(req: Request, res: Response) {
+	const { userId, body: {department_id, department_name} } = req;
 
-	// Check if department exists
+	if(!(await isAdmin(userId!)) || !(await userIsDepartmentManager(userId!, department_id))) {
+		return res.status(403).send("Not authorized for this action.");
+	}
+
 	if (!(await departmentExists(department_id))) {
 		return res.status(404).send("Department does not exist");
 	}
 
-	try {
-		const q = query(
-			collection(db, "department_members"),
-			where("department_id", "==", department_id)
-		);
-		const querySnapshot = await getDocs(q);
-		const members: any = [];
-		querySnapshot.forEach((doc) => {
-			const data = doc.data();
-			delete data.department_id;
-			members.push(data);
-		});
-		res.status(200).send({ members: members });
-	} catch (e) {
-		console.error("Error getting document: ", e);
-		res.status(500).send("Error getting department members");
-	}
-}
-
-/**
- * @param {Object} req                      Request object
- * @param {string} req.body.department_id   Department ID
- * @returns {Object}                        Department managers
- */
-async function getDepartmentManager(req: Request, res: Response) {
-	console.log(req);
-	console.log(req.params);
-	console.log(req.params.departmentId);
-
-	const department_id = req.params.departmentId;
-
-	// Check if department exists
-	if (!(await departmentExists(department_id))) {
-		return res.status(404).send("Department does not exist");
+	if (await departmentNameExists(department_name)) {
+		return res.status(409).send("Department name already exists");
 	}
 
 	try {
-		if (!(await departmentExists(department_id))) {
-			return res.status(404).send("Department does not exist");
-		}
-
-		const q = query(
-			collection(db, "department_managers"),
-			where("department_id", "==", department_id)
-		);
-		const querySnapshot = await getDocs(q);
-		const managers: any = [];
-		querySnapshot.forEach((doc) => {
-			const data = doc.data();
-			delete data.department_id;
-			managers.push(data);
+		const docRef = await updateDoc(doc(db, "departments", department_id), {
+			department_name: department_name,
 		});
-		res.status(200).send({ managers: managers });
+
+		res.sendStatus(200);
 	} catch (e) {
-		console.error("Error getting document: ", e);
-		res.status(500).send("Error getting department managers");
+		console.error("Error updating document: ", e);
+		res.status(500).send("Error updating department");
 	}
 }
 
@@ -291,14 +260,14 @@ async function getDepartment(req: Request, res: Response) {
 	const departmentMembers = await getDepartmentMembersId(departmentSnap.id);
 
 	let members: Array<DocumentData> = [];
-	for (const member of departmentMembers) { 
-		console.log(member)
+	for (const member of departmentMembers) {
+		console.log(member);
 		const user = await getUserById(member);
-		console.log(user)
+		console.log(user);
 		members.push(user!);
 	}
 
-	console.log(members)
+	console.log(members);
 
 	data.department_manager = departmentManager[0];
 	data.department_members = members;
@@ -392,7 +361,7 @@ async function getDepartmentMembersId(department_id: string) {
 	return querySnapshot.docs.map((doc) => doc.data().user_id);
 }
 
-const getUserById = async (userId: string) => {
+async function getUserById(userId: string) {
 	const docRef = doc(db, "users", userId);
 	const docSnap = await getDoc(docRef);
 
@@ -406,13 +375,21 @@ const getUserById = async (userId: string) => {
 	return data;
 };
 
+async function isAdmin(userId: string) {
+	const q = query(
+		collection(db, "admins"),
+		where("user_id", "==", userId)
+	);
+	const querySnapshot = await getDocs(q);
+	return querySnapshot.size > 0;
+}
+
 module.exports = {
 	createDepartment,
 	joinDepartment,
-	leaveDepartment,
+	leaveDepartment, 
+	editDepartment,
 	makeDepartmentManager,
-	getDepartmentMembers,
-	getDepartmentManager,
 	getDepartment,
 	getDepartments,
 };
