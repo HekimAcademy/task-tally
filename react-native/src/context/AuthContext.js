@@ -21,8 +21,9 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ SignUp }}>
-            <SignUp/>
             {children}
         </AuthContext.Provider>
     )
 }
+
+export default SignUp;

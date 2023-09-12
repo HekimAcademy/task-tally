@@ -1,102 +1,233 @@
-import {
-    Text,
-    Button,
-    View,
-    SafeAreaView,
-    TouchableOpacity,
-    TextInput,
-    Image
-} from "react-native";
-import Colors from "../constants/Colors";
+import React, { useState } from "react";
+import { Image } from "expo-image";
+import { StyleSheet, View, Pressable, Text, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { ArrowLeftIcon } from 'react-native-heroicons/solid'
-import React, { useState, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { Padding, Color, Border, FontFamily, FontSize } from "../../GlobalStyles";
+import axios from "axios";
 
 
-export default function SignUpScreen() {
+const SignUp = () => {
     const navigation = useNavigation<any>();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('')
-    const [name, setname] = useState('')
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
 
-    const SignUp = useContext(AuthContext);
 
-    const handleLogin = () => {
-        const data = {
-            email: email,
-            password: password,
-            name: name
-        };
-    }
+    const handleSignUp = async () => {
+        try {
+            const response = await axios.post("{{main_url}}/signup", {
+                email,
+                password,
+            });
+            console.log("Kayıt başarılı:", response.data);
 
+            navigation.navigate("SignIn");
+        } catch (error) {
+            console.error("Kayıt sırasında bir hata oluştu:", error);
+        }
+    };
     return (
-        <View style={{ flex: 1, backgroundColor: Colors.black }}>
-            <SafeAreaView style={{ flex: 0.66 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
-                    <TouchableOpacity
-                        onPress={() => navigation.goBack()}
-                        style={{ backgroundColor: Colors.white, borderTopRightRadius: 10, borderBottomLeftRadius: 10, padding: 4, marginLeft: 10 }}
-                    >
-                        <ArrowLeftIcon color={Colors.black} />
-                    </TouchableOpacity>
-                </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 10 }}>
-                    <Image source={require('../assets/images/elephant-clipart-transparent-background-12.png')}
-                        style={{ width: 250, height: 250 }} />
-                </View>
-            </SafeAreaView>
-            <View style={{ flex: 1, backgroundColor: Colors.white, paddingHorizontal: 32, paddingTop: 32, borderTopLeftRadius: 50, borderTopRightRadius: 50 }}>
-                <View style={{ marginTop: 9, marginVertical: 9 }}>
-                    <Text
-                        style={{ color: Colors.gray, fontWeight: '700', marginLeft: 20 }}>Ad</Text>
-                    <TextInput
-                        style={{ padding: 16, backgroundColor: Colors.InputGray, fontWeight: '700', borderRadius: 20, marginBottom: 20 }}
-                        value={name}
-                        placeholder=" Adinizi Giriniz"
-                        onChangeText={text => setname(text)}
 
-                    />
-                    <Text
-                        style={{ color: Colors.gray, fontWeight: '700', marginLeft: 20 }}> Email </Text>
-                    <TextInput
-                        style={{ padding: 16, backgroundColor: Colors.InputGray, fontWeight: '700', borderRadius: 20, marginBottom: 13 }}
-                        value={email}
-                        placeholder="Mail Adresinizi Giriniz"
-                        onChangeText={text => setEmail(text)}
+        <View style={styles.signUp}>
 
-                    />
-                    <Text
-                        style={{ color: Colors.gray, fontWeight: '700', marginLeft: 20 }}> Sifre</Text>
+            <Image
+                style={styles.rectangleIcon}
+                contentFit="cover"
+                source={require("../assets/rectangle.png")}
+            />
+            <Image
+                style={styles.rectangleIcon}
+                contentFit="cover"
+                source={require("../assets/rectangle-1.png")}
+            />
+
+            <View style={[styles.rectangleParent, styles.rectanglePosition]}>
+
+                <View style={[styles.frameChild, styles.framePosition]}>
                     <TextInput
-                        style={{ padding: 16, backgroundColor: Colors.InputGray, fontWeight: '700', borderRadius: 20, marginBottom: 20 }}
+                        style={styles.textInput}
+                        placeholder="Şifre"
+                        onChangeText={(text) => setPassword(text)}
                         value={password}
-                        secureTextEntry
-                        placeholder="Sifrenizi Giriniz"
-                        onChangeText={text => setPassword(text)}
-
-
-
+                        secureTextEntry={true}
                     />
-                    <TouchableOpacity
-                        style={{ paddingVertical: 12, backgroundColor: Colors.black, borderRadius: 15 }}
-                        onPress={() => { SignUp(name, email, password); }}
-                    >
-                        <Text style={{ fontSize: 15, color: Colors.white, fontWeight: 'bold', textAlign: 'center' }}>
-                            Kayit Ol
-                        </Text>
-                    </TouchableOpacity>
-
-
-                    <Text style={{ fontSize: 15, color: Colors.gray, fontWeight: 'bold', textAlign: 'center', paddingVertical: 30 }}>Ya da</Text>
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', }}>
-                        <Text style={{ color: Colors.gray, fontWeight: 'bold', marginRight: 10 }}>Hesabiniz Var Mi ? </Text>
-                        <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
-                            <Text style={{ fontWeight: 'bold', color: Colors.primary, marginLeft: 10 }}>Giris Yap</Text>
-                        </TouchableOpacity>
-                    </View>
                 </View>
+                <Image
+
+                    style={[styles.lockIcon, styles.iconPosition]}
+                    contentFit="cover"
+                    source={require("../assets/lock.png")}
+                />
+
+            </View>
+            <View style={[styles.signUpInner, styles.rectanglePosition]}>
+                <Pressable
+                    style={[styles.frameItem, styles.frameLayout]}
+                    onPress={handleSignUp}
+                />
+            </View>
+            <Text style={[styles.hesabnVarM, styles.giriYap1Typo]}>{`Hesabın Var Mı ? 
+`}</Text>
+            <View style={[styles.rectangleGroup, styles.rectanglePosition]}>
+                <View style={[styles.frameInner, styles.frameLayout]} >
+                    <TextInput
+                        style={styles.textInput}
+                        placeholder="İsminizi Giriniz"
+                        onChangeText={(text) => setName(text)}
+                        value={name}
+                    /></View>
+                <Image
+                    style={[styles.driveFileRenameOutline, styles.iconPosition]}
+                    contentFit="cover"
+                // source={require("../assets/drive-file-rename-outline.png")}
+                />
+            </View>
+            <Text style={styles.kaytOl}>Kayıt Ol</Text>
+            <Pressable
+                style={styles.giriYap}
+                onPress={() => navigation.navigate("SignIn")}
+            >
+                <Text style={[styles.giriYap1, styles.giriYap1Typo]}>{`Giriş Yap
+`}</Text>
+            </Pressable>
+            <View style={styles.rectangleContainer}>
+                <View style={[styles.frameChild, styles.framePosition]}>
+                    <TextInput
+                        style={styles.textInput}
+                        placeholder="E-posta adresi"
+                        onChangeText={(text) => setEmail(text)}
+                        value={email}
+                    />
+                </View>
+                <Image
+                    style={[styles.maleUserIcon, styles.iconPosition]}
+                    contentFit="cover"
+                    source={require("../assets/male-user.png")}
+                />
             </View>
         </View>
-    )
-}
+    );
+};
+
+const styles = StyleSheet.create({
+    textInput: {
+        width: 100,
+        marginLeft: 60,
+        marginTop:13
+    },
+    rectanglePosition: {
+        padding: Padding.p_3xs,
+        left: 48,
+        position: "absolute",
+    },
+    framePosition: {
+        zIndex: 0,
+        backgroundColor: Color.white,
+        borderRadius: Border.br_base,
+    },
+    iconPosition: {
+        zIndex: 1,
+        height: 29,
+        width: 41,
+        position: "absolute",
+    },
+    frameLayout: {
+        height: 47,
+        width: 274,
+    },
+    giriYap1Typo: {
+        textAlign: "right",
+        fontFamily: FontFamily.interMedium,
+        fontWeight: "500",
+        fontSize: FontSize.size_xs,
+    },
+    rectangleIcon: {
+        top: 0,
+        left: 0,
+        width: 390,
+        position: "absolute",
+        height: 844,
+    },
+    frameChild: {
+        height: 44,
+        width: 274,
+        zIndex: 0,
+    },
+    lockIcon: {
+        top: 17,
+        left: 20,
+    },
+    rectangleParent: {
+        top: 506,
+    },
+    frameItem: {
+        borderRadius: Border.br_sm,
+        backgroundColor: Color.cadetblue,
+    },
+    signUpInner: {
+        top: 605,
+    },
+    hesabnVarM: {
+        top: 728,
+        left: 8,
+        color: Color.black,
+        width: 187,
+        height: 18,
+        position: "absolute",
+    },
+    frameInner: {
+        zIndex: 0,
+        backgroundColor: Color.white,
+        borderRadius: Border.br_base,
+    },
+    driveFileRenameOutline: {
+        top: 19,
+        left: 21,
+        overflow: "hidden",
+    },
+    rectangleGroup: {
+        top: 308,
+    },
+    kaytOl: {
+        top: 626,
+        left: 125,
+        fontSize: FontSize.size_xl,
+        fontFamily: FontFamily.interRegular,
+        textAlign: "center",
+        width: 143,
+        height: 23,
+        color: Color.white,
+        position: "absolute",
+    },
+    giriYap1: {
+        width: 83,
+        height: 11,
+        color: Color.white,
+    },
+    giriYap: {
+        left: 226,
+        top: 729,
+        position: "absolute",
+    },
+    maleUserIcon: {
+        top: 13,
+        left: 17,
+    },
+    rectangleContainer: {
+        top: 409,
+        paddingHorizontal: 9,
+        paddingVertical: 6,
+        left: 48,
+        position: "absolute",
+    },
+    signUp: {
+        flex: 1,
+        width: "100%",
+        overflow: "hidden",
+        height: 844,
+        backgroundColor: Color.white,
+        borderRadius: Border.br_base,
+    },
+});
+
+export default SignUp;
