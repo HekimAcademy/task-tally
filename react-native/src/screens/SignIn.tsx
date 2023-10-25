@@ -1,40 +1,40 @@
 import * as React from "react";
 import { useState } from "react";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from "expo-image";
-import { StyleSheet, View, Pressable, Text, TextInput } from "react-native";
+import { StyleSheet, View, Pressable, Text, TextInput, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Color, Border, FontFamily, Padding, FontSize } from "../../GlobalStyles";
+import { Color, Border, Padding, FontSize } from "../../GlobalStyles";
 import axios from "axios";
+
 
 
 const SignIn = () => {
     const navigation = useNavigation<any>();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    
     const handleSignIn = async () => {
         try {
-            const response = await fetch("{{main_url}}/auth/signIn", {
-                method: "POST",
+            const response = await axios.post('http://192.168.1.141:3000/auth/signIn', {
+                email: email,
+                password: password,
+            }, {
                 headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (response.status === 200) {
-                // Giriş başarılı, işlemi devam ettirin
-                // Örneğin, kullanıcıyı ana sayfaya yönlendirin
-            } else {
-                // Giriş başarısız, hata mesajını işleyin
-                // Örneğin, kullanıcıya hata mesajını gösterin
+                    'Content-Type': 'application/json'
+                }
             }
-        } catch (error) {
-            // Hata durumunu işleyin
-            console.error("Giriş sırasında bir hata oluştu:", error);
+            );
+            const responseData = response.data;
+            console.log(responseData.uid);
+            Alert.alert('Başarılı', 'Giriş işlemi başarıyla tamamlandı');
+            await AsyncStorage.setItem('accessToken', responseData.accessToken);
+            await AsyncStorage.setItem('uid', responseData.uid);
+            navigation.navigate('Home')
+        } catch (error: any) {
+            console.error('Kayıt Hatası:', error.response.data);
         }
     };
-
 
     return (
         <View style={[styles.signIn, styles.frameBg]}>
@@ -51,7 +51,13 @@ const SignIn = () => {
             <View style={styles.signInInner}>
                 <View style={styles.frameWrapper}>
                     <View style={styles.frameWrapper}>
-                        <View style={[styles.frameChild, styles.frameBg]} />
+                        <View style={[styles.frameChild, styles.frameBg]}>
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder="E-mail"
+                                value={email}
+                                onChangeText={(text) => setEmail(text)}
+                            /></View>
                     </View>
                 </View>
             </View>
@@ -60,7 +66,7 @@ const SignIn = () => {
                     <View style={[styles.frameItem, styles.frameBg]} >
                         <TextInput
                             style={styles.textInput}
-                            placeholder="Şire"
+                            placeholder="şifre"
                             value={password}
                             onChangeText={(text) => setPassword(text)}
                         />
@@ -103,7 +109,7 @@ const SignIn = () => {
 
 const styles = StyleSheet.create({
     textInput: {
-        width: 100,
+        width: 200,
         marginLeft: 60,
         marginTop: 13
     },
@@ -123,7 +129,6 @@ const styles = StyleSheet.create({
     kaytOl1Typo: {
         textAlign: "center",
         color: Color.white,
-        fontFamily: FontFamily.interRegular,
     },
     rectangleIcon: {
         top: 0,
@@ -187,7 +192,6 @@ const styles = StyleSheet.create({
     hesabnYokM: {
         left: 8,
         fontWeight: "500",
-        fontFamily: FontFamily.interMedium,
         color: Color.black,
         textAlign: "right",
         width: 187,

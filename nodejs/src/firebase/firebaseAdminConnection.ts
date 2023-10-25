@@ -5,6 +5,7 @@ const admin = require("firebase-admin");
 admin.initializeApp({
     credential: admin.credential.cert(serviceAcoount),
     databaseURL: "https://task-tally-default-rtdb.europe-west1.firebasedatabase.app"
+    
 });
 
 console.log("Firebase Admin connection established!")

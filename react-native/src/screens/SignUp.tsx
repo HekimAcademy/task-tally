@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Image } from "expo-image";
-import { StyleSheet, View, Pressable, Text, TextInput } from "react-native";
+import { StyleSheet, View, Pressable, Text, TextInput, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Padding, Color, Border, FontFamily, FontSize } from "../../GlobalStyles";
+import { Padding, Color, Border, FontSize } from "../../GlobalStyles";
+import Colors from "../constants/Colors";
 import axios from "axios";
+import { Formik } from 'formik';
+
 
 
 const SignUp = () => {
@@ -11,25 +14,37 @@ const SignUp = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
+    const [token, setToken] = React.useState<String>("")
+    const [error, showError] = React.useState<Boolean>(false);
 
 
     const handleSignUp = async () => {
         try {
-            const response = await axios.post("{{main_url}}/signup", {
-                email,
-                password,
-            });
-            console.log("Kayıt başarılı:", response.data);
-
-            navigation.navigate("SignIn");
-        } catch (error) {
-            console.error("Kayıt sırasında bir hata oluştu:", error);
+            const response = await axios.post('http://192.168.1.141:3000/auth/signUp', {
+                name: name,
+                email: email,
+                password: password,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+            );
+            const responseData = response.data;
+            console.log(responseData);
+            console.log(responseData.accessToken);
+            Alert.alert('Başarılı', 'Kayıt işlemi başarıyla tamamlandı');
+            navigation.navigate('SignIn')
+        } catch (error: any) {
+            console.error('Kayıt Hatası:', error.response.data);
         }
     };
+
+
+    
     return (
 
-        <View style={styles.signUp}>
-
+        <View style={styles.signUp} >
             <Image
                 style={styles.rectangleIcon}
                 contentFit="cover"
@@ -47,18 +62,16 @@ const SignUp = () => {
                     <TextInput
                         style={styles.textInput}
                         placeholder="Şifre"
-                        onChangeText={(text) => setPassword(text)}
+                        onChangeText={(text: string) => setPassword(text)}
                         value={password}
                         secureTextEntry={true}
                     />
                 </View>
                 <Image
-
                     style={[styles.lockIcon, styles.iconPosition]}
                     contentFit="cover"
                     source={require("../assets/lock.png")}
                 />
-
             </View>
             <View style={[styles.signUpInner, styles.rectanglePosition]}>
                 <Pressable
@@ -66,6 +79,7 @@ const SignUp = () => {
                     onPress={handleSignUp}
                 />
             </View>
+
             <Text style={[styles.hesabnVarM, styles.giriYap1Typo]}>{`Hesabın Var Mı ? 
 `}</Text>
             <View style={[styles.rectangleGroup, styles.rectanglePosition]}>
@@ -73,13 +87,13 @@ const SignUp = () => {
                     <TextInput
                         style={styles.textInput}
                         placeholder="İsminizi Giriniz"
-                        onChangeText={(text) => setName(text)}
+                        onChangeText={(text: string) => setName(text)}
                         value={name}
                     /></View>
                 <Image
                     style={[styles.driveFileRenameOutline, styles.iconPosition]}
                     contentFit="cover"
-                // source={require("../assets/drive-file-rename-outline.png")}
+                    source={require("../assets/drive-file-rename-outline.png")}
                 />
             </View>
             <Text style={styles.kaytOl}>Kayıt Ol</Text>
@@ -95,7 +109,7 @@ const SignUp = () => {
                     <TextInput
                         style={styles.textInput}
                         placeholder="E-posta adresi"
-                        onChangeText={(text) => setEmail(text)}
+                        onChangeText={(text: string) => setEmail(text)}
                         value={email}
                     />
                 </View>
@@ -105,15 +119,17 @@ const SignUp = () => {
                     source={require("../assets/male-user.png")}
                 />
             </View>
-        </View>
+
+        </View >
     );
 };
 
 const styles = StyleSheet.create({
     textInput: {
-        width: 100,
+        width: 200,
         marginLeft: 60,
-        marginTop:13
+        marginTop: 13,
+        color: Colors.black
     },
     rectanglePosition: {
         padding: Padding.p_3xs,
@@ -137,7 +153,6 @@ const styles = StyleSheet.create({
     },
     giriYap1Typo: {
         textAlign: "right",
-        fontFamily: FontFamily.interMedium,
         fontWeight: "500",
         fontSize: FontSize.size_xs,
     },
@@ -192,7 +207,6 @@ const styles = StyleSheet.create({
         top: 626,
         left: 125,
         fontSize: FontSize.size_xl,
-        fontFamily: FontFamily.interRegular,
         textAlign: "center",
         width: 143,
         height: 23,

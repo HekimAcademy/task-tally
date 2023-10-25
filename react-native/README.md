@@ -18,7 +18,7 @@
 * - Genel raporu görüntüleyebilir
 * - Genel raporu görüntüleyebilir
 * 
-
+w
 
 ## SAYFALAR
 * KAYIT OL
@@ -41,4 +41,4 @@
 * TÜM DEPARTMANLARI GÖRÜNTÜLE (ADMIN)
 * GENEL RAPOR (ADMIN)
 * RAPOR (ADMIN)
-* 
+*

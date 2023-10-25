@@ -1,9 +1,5 @@
 /* fonts */
-export const FontFamily = {
-    interRegular: "Inter-Regular",
-    interMedium: "Inter-Medium",
-    poppinsRegular: "Poppins-Regular",
-};
+
 /* font sizes */
 export const FontSize = {
     size_6xl: 25,

@@ -2,13 +2,14 @@ import * as React from "react";
 import { Image } from "expo-image";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { Color, FontFamily, FontSize, Border } from "../../GlobalStyles";
+import { Color, FontSize, Border } from "../../GlobalStyles";
 
 const Splash = () => {
     const navigation = useNavigation<any>();
 
     return (
         <View style={styles.splash}>
+        <Text></Text>
             <View style={styles.atTheOfficebroWrapper}>
                 <Image
                     style={styles.atTheOfficebroIcon}
@@ -34,7 +35,6 @@ const styles = StyleSheet.create({
     itsABigTypo: {
         textAlign: "center",
         color: Color.black,
-        fontFamily: FontFamily.interRegular,
         position: "absolute",
     },
     atTheOfficebroIcon: {
@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
         height: 44,
     },
     getStarted: {
-        top: 11,
-        left: 64,
+        top: '20%',
+        left: '22%',
         fontSize: 18,
         width: 172,
         height: 27,
@@ -68,8 +68,8 @@ const styles = StyleSheet.create({
         ],
     },
     getStartedWrapper: {
-        top: 713,
-        left: 53,
+        top: '89%',
+        left: '12%',
         borderRadius: Border.br_smi,
         backgroundColor: Color.cadetblue,
         width: 300,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
         backgroundColor: Color.white,
         flex: 1,
         width: "100%",
-        height: 844,
+        height: '100%',
         overflow: "hidden",
     },
 });
